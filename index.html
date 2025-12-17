@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>標車酷線上抽獎系統</title>
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        /* ------------------ 全局與配色 ------------------ */
+        :root {
+            --bg-color: #191935; 
+            --accent-color: #D9F107; /* 亮黃綠色 */
+            --text-color: #ffffff;
+            --text-secondary: rgba(255, 255, 255, 0.75);
+            --card-bg: rgba(255, 255, 255, 0.06); /* 白色 6% 透明玻璃感 */
+            --shutter-bg: rgba(25, 25, 53, 0.95); /* 接近背景色的半透明遮罩 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* 主要 CTA 按鈕: 亮黃綠色 */
+        .cta-btn {
+            background-color: var(--accent-color); 
+            color: #191935; /* 深色文字 */
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: 0.75rem;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 15px rgba(217, 241, 7, 0.5);
+            line-height: 1.2;
+        }
+        .cta-btn:hover {
+            box-shadow: 0 0 25px rgba(217, 241, 7, 0.8);
+            transform: translateY(-1px) scale(1.01);
+        }
+        .cta-btn:disabled {
+            background-color: #4a4a66;
+            color: #b3b3b3;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* 卡片區塊 (白色 6% 透明玻璃感) */
+        .glass-card {
+            background: var(--card-bg); 
+            border-radius: 1rem;
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.1); 
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        /* ------------------ 福引き機樣式 ------------------ */
+        .fukubiki-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 450px; 
+            height: 450px;
+            position: relative;
+            user-select: none;
+            overflow: hidden; /* 視覺要求：必須 overflow: hidden */
+            margin: 0 auto;
+        }
+
+        /* 核心鼓體 */
+        #drum {
+            width: 300px; 
+            height: 300px;
+            border-radius: 50%;
+            background: #4a4a66; 
+            border: 8px solid #D9F107; /* 亮黃綠色邊框 */
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8), 0 0 40px rgba(217, 241, 7, 0.3);
+            overflow: hidden;
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* 透明球箱 (內層) */
+        #ball-chamber {
+            position: absolute;
+            width: 90%;
+            height: 90%;
+            top: 5%;
+            left: 5%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05); 
+            backdrop-filter: blur(10px); 
+            overflow: hidden; 
+            z-index: 2; 
+        }
+
+        /* 彩球樣式 */
+        .ball {
+            width: 20px; 
+            height: 20px;
+            border-radius: 50%;
+            position: absolute;
+            opacity: 0.95;
+            box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.6), 0 0 5px rgba(255, 255, 255, 0.5); 
+            transition: transform 0.5s ease-out;
+            z-index: 5; 
+        }
+
+        /* 搖把/手柄 */
+        #handle {
+            position: absolute;
+            right: -120px; /* 移到右側 */
+            top: 50%;
+            width: 150px;
+            height: 30px;
+            cursor: pointer;
+            transform-origin: 20px 50%;
+            transition: transform 0.1s ease;
+            z-index: 10;
+        }
+
+        /* 搖把旋轉動畫 */
+        @keyframes handle-turn {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .handle-turning {
+            animation: handle-turn 0.2s linear infinite;
+        }
+        
+        /* 鼓體旋轉動畫 (應用到父級，讓子級 #drum 旋轉) */
+        @keyframes drum-spin {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        .drum-spinning #drum {
+             animation: drum-spin 0.5s linear infinite;
+        }
+
+        /* 出球口 */
+        #exit-chute {
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 50px;
+            background-color: var(--shutter-bg); /* 幾乎透明但能遮擋 */
+            border-radius: 0 0 25px 25px;
+            z-index: 15;
+            overflow: hidden;
+        }
+
+        /* 托盤 (Receiving Tray) */
+        #tray {
+            position: absolute;
+            bottom: -50px; 
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 80px;
+            background-color: #383856; 
+            border-radius: 0 0 10px 10px;
+            border-top: 5px solid var(--accent-color); 
+            box-shadow: 0 0 15px rgba(217, 241, 7, 0.7); 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 10px;
+            z-index: 10;
+        }
+        
+        /* 出球動畫 */
+        .winning-ball {
+            position: absolute !important;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* 輕微彈跳效果 */
+            z-index: 20; 
+            transform-origin: center;
+        }
+        
+        /* ------------------ 抽獎頁面佈局 ------------------ */
+        .raffle-main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr; 
+            gap: 2rem;
+            align-items: flex-start;
+        }
+        
+        @media (max-width: 1024px) {
+            .raffle-main-grid {
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ------------------ 應用程式主體 ------------------ -->
+<div id="app-container" class="w-full max-w-6xl mx-auto">
+    
+    <header class="text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest uppercase">標車酷線上抽獎機</h1>
+        <p class="text-lg mt-2 text-white/75">開獎現場</p>
+    </header>
+
+    <!-- 頁面 1: 名單輸入與設定 -->
+    <section id="page-settings" class="transition-opacity duration-500">
+        <div class="glass-card p-8 space-y-8">
+            <h2 class="text-2xl font-bold border-b border-white/20 pb-3 text-white">活動設定與名單輸入</h2>
+            
+            <!-- 獎項資訊 (固定清單) -->
+            <div class="p-5 bg-white/5 rounded-xl">
+                <h3 class="font-bold text-xl text-white mb-4">本次活動總覽</h3>
+                <div class="flex justify-between items-center text-lg font-bold border-b border-white/20 pb-2 mb-2">
+                    <span>抽獎順序與獎項</span>
+                    <span>名額</span>
+                </div>
+                <div id="prize-fixed-list" class="space-y-1 text-white/90">
+                    <!-- 獎項清單將由 JS 注入 -->
+                </div>
+                 <p class="text-xl font-black text-white/90 pt-3 border-t border-white/20 mt-3">
+                    本次總獎項名額：<span id="total-prizes-display" class="text-4xl text-yellow-300"></span> 名
+                </p>
+            </div>
+            
+            <!-- 名單輸入 -->
+            <div>
+                <label for="names-input" class="block mb-3 font-semibold text-white/90">請貼上/輸入抽獎名單 (每行一位，不含重複)：</label>
+                <textarea id="names-input" rows="10" class="w-full bg-black/30 border border-white/20 p-4 rounded-lg text-white resize-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300"></textarea>
+                <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
+                    <label class="cta-btn cursor-pointer text-base">
+                        上傳 .txt/.csv 名單
+                        <input type="file" id="file-upload" accept=".txt,.csv" class="hidden" onchange="handleFileInput(event)">
+                    </label>
+                    <p class="text-lg font-medium text-right text-white/75">
+                        目前人數: <span id="total-participants" class="text-yellow-300 font-bold text-2xl">0</span> 
+                        / 最低要求: <span id="min-participants-required" class="font-bold text-2xl">34</span>
+                    </p>
+                </div>
+            </div>
+
+            <button id="next-step-btn" class="cta-btn w-full mt-6 text-xl" onclick="toRafflePage()" disabled>進入抽獎頁</button>
+        </div>
+    </section>
+
+    <!-- 頁面 2: 抽獎頁（福引き機與主持人控制） -->
+    <section id="page-raffle" class="transition-opacity duration-500 hidden">
+        <div class="raffle-main-grid">
+            
+            <!-- 左側：獎項狀態與摘要 -->
+            <div class="glass-card p-6 h-fit sticky top-5">
+                <h3 class="text-xl font-bold text-white mb-4 border-b border-white/20 pb-2">獎項摘要 (總進度)</h3>
+                <ul id="raffle-prize-summary" class="space-y-3 font-semibold text-white/80">
+                    <!-- 獎項摘要將由 JS 注入 -->
+                </ul>
+                <div class="mt-6 pt-4 border-t border-white/20">
+                    <p class="text-lg font-bold text-white">總體抽獎進度:</p>
+                    <p class="text-3xl font-black text-yellow-300 mt-1">
+                        <span id="overall-drawn-count">0</span> / <span id="overall-target-count">0</span>
+                    </p>
+                    <button class="cta-btn mt-4 w-full" onclick="viewResultsSafely()">查看完整結果報告</button>
+                </div>
+            </div>
+
+            <!-- 右側：主抽獎區與控制 -->
+            <div class="w-full">
+                
+                <!-- 抽獎狀態顯示 -->
+                <div class="w-full text-center mb-6 glass-card p-5">
+                    <p class="text-base text-white/75 font-semibold uppercase mb-1" id="prize-tier-text">
+                        目前獎項：
+                    </p>
+                    <h2 id="draw-prompt" class="text-2xl sm:text-3xl font-black text-white tracking-wide break-words"></h2>
+                    <p class="text-base font-bold mt-3 text-white/70">
+                        本獎項進度: <span id="current-draw-progress" class="text-yellow-300 font-black text-xl">0/0</span>
+                    </p>
+                    <p id="status-message" class="text-lg font-semibold mt-3 text-white/85"></p>
+                </div>
+                
+                <!-- 福引き機區塊 -->
+                <div class="flex flex-col items-center w-full">
+                    <div id="fukubiki-container" class="fukubiki-container">
+                        <div id="drum">
+                            <div id="ball-chamber">
+                                <div id="balls-container" class="relative w-full h-full"></div>
+                            </div>
+
+                            <!-- 搖把 (點擊開始抽獎) -->
+                            <div id="handle" onclick="handleControlClick()">
+                                <div class="w-full h-full bg-gray-500 rounded-full flex items-center justify-end pr-2 shadow-inner">
+                                    <div class="w-8 h-8 bg-red-600 rounded-full border-2 border-red-800 shadow-xl"></div>
+                                </div>
+                            </div>
+                            
+                            <div id="exit-chute"></div>
+                        </div>
+
+                        <!-- 托盤 -->
+                        <div id="tray">
+                            <!-- 抽出的球會顯示在這裡 -->
+                            <div id="result-ball" class="hidden w-8 h-8 rounded-full flex justify-center items-center text-xs font-black text-gray-900 shadow-2xl"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 抽獎控制區 -->
+                <div id="control-area" class="w-full text-center mt-8">
+                    <button id="control-btn" class="cta-btn text-xl p-5 w-72 h-auto" onclick="handleControlClick()">
+                        開始抽獎
+                    </button>
+                </div>
+                
+                <!-- 單一獎項抽完後的顯示區 -->
+                <div id="prize-done-display" class="glass-card p-6 mt-8 hidden">
+                    <h3 id="prize-done-title" class="text-2xl font-black mb-4 text-white"></h3>
+                    
+                    <!-- 得獎者名單表格 -->
+                    <div class="overflow-x-auto mb-6 max-h-72">
+                        <table class="min-w-full text-base">
+                            <thead>
+                                <tr class="text-left font-semibold text-white/70 border-b border-white/20">
+                                    <th class="py-3 px-3">序號</th>
+                                    <th class="py-3 px-3">得獎者姓名</th>
+                                    <th class="py-3 px-3">抽出時間</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prize-done-winners-body">
+                                <!-- 列表內容 -->
+                            </tbody>
+                        </table>
+                    </div>
+            
+                    <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
+                        <button class="cta-btn" onclick="copySinglePrizeResults()">複製本獎名單</button>
+                        <button class="cta-btn" onclick="downloadSinglePrizeCSV()">下載本獎 CSV</button>
+                        <button class="cta-btn" onclick="handleNextPrize()">抽下一獎項</button>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+    
+    <!-- 頁面 3: 得獎名單頁（結果報告） -->
+    <section id="page-results" class="transition-opacity duration-500 hidden">
+        <div class="glass-card p-8 space-y-6">
+            <h2 class="text-3xl font-black text-white border-b border-white/20 pb-2">完整中獎名單報告</h2>
+            <p class="text-lg font-semibold text-white/75">本次抽獎開始時間: <span id="draw-time-started" class="text-yellow-300 font-mono">N/A</span></p>
+            <p class="text-lg font-semibold text-white/75">本次抽獎結束時間: <span id="draw-time-ended" class="text-yellow-300 font-mono">N/A</span></p>
+
+            <!-- 得獎名單表格 -->
+            <div class="overflow-x-auto mt-4 shadow-xl rounded-lg">
+                <table class="min-w-full bg-white/5 overflow-hidden text-base">
+                    <thead>
+                        <tr class="text-left bg-white/10">
+                            <th class="p-3">獎項</th>
+                            <th class="p-3">獎品名稱</th>
+                            <th class="p-3">得獎者</th>
+                            <th class="p-3">抽出時間</th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-table-body">
+                        <!-- 結果將由 JavaScript 注入 -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
+                <button class="cta-btn" onclick="copyAllResults()">複製全部名單</button>
+                <button class="cta-btn" onclick="downloadFullCSV()">下載完整 CSV 報告</button>
+                <!-- 新增：返回繼續抽獎按鈕 -->
+                <button class="cta-btn bg-blue-600 hover:bg-blue-700 text-white" onclick="backToRaffle()">返回繼續抽獎</button>
+                <button class="cta-btn bg-red-600 hover:bg-red-700 text-white" onclick="resetApp()">重新開始 (清空)</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal: 自定義提示框 (取代 alert/confirm) -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+        <div class="glass-card p-6 w-11/12 max-w-sm text-center">
+            <h4 id="modal-title" class="text-xl font-bold mb-3 text-yellow-300"></h4>
+            <p id="modal-text" class="mb-5 text-white/90"></p>
+            <button id="modal-close-btn" class="cta-btn w-full">關閉</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------------------- 固定配置與數據 ----------------------
+    const STORAGE_KEY = 'fukubikiRaffleStateV4';
+    const TOTAL_QUOTA = 34; // 8 + 5 + 10 + 10 + 1
+
+    // 獎項清單 (固定)
+    const PRIZE_TIERS = [
+        { id: 1, tier: '伍獎', name: 'Lubro GT TECH', quota: 8, value: '約 20,000 元', full: 'Lubro GT TECH ×8 頂（價值約 20,000 元）', color: 'bg-gray-400' }, 
+        { id: 2, tier: '肆獎', name: 'Lubro GT TECH 碳纖維', quota: 5, value: '約 27,500 元', full: 'Lubro GT TECH 碳纖維 ×5 頂（總價值約 27,500 元）', color: 'bg-purple-500' },
+        { id: 3, tier: '參獎', name: 'MiVue™ M820WD 機車行車記錄器', quota: 10, value: '約 99,900 元', full: 'MiVue™ M820WD 機車行車記錄器 ×10 台（總價值約 99,900 元）', color: 'bg-green-500' }, 
+        { id: 4, tier: '貳獎', name: 'Mio MiVue™ D910W 行車記錄器', quota: 10, value: '約 209,900 元', full: 'Mio MiVue™ D910W 行車記錄器 ×10 台（總價值約 209,900 元）', color: 'bg-yellow-500' }, 
+        { id: 5, tier: '頭獎', name: 'PGO spring 125 TCS版', quota: 1, value: '約 99,800 元', full: 'PGO spring 125 TCS版 ×1 台（總價值約 99,800 元）', color: 'bg-red-600' } 
+    ];
+
+    // 狀態機定義 (State Machine)
+    const DRAW_STATE = {
+        IDLE: 'idle',           // 等待抽獎按鈕
+        DRAWING: 'drawing',     // 抽獎中 (動畫)
+        PRIZE_DONE: 'prizeDone',// 單一獎項已抽完，等待主持人點擊下一獎
+        ALL_DONE: 'allDone'     // 所有獎項皆已抽完
+    };
+
+    // 抽獎機內的彩球顏色 (隨機裝飾用)
+    const BALL_COLORS_DECORATION = [
+        'bg-white', 'bg-red-500', 'bg-blue-500', 'bg-yellow-400', 'bg-green-400', 
+        'bg-pink-400', 'bg-indigo-400'
+    ];
+    const NUM_DECORATION_BALLS = 50;
+
+    // ---------------------- 應用程式狀態 ----------------------
+    let appState = {
+        page: 'settings', 
+        originalNames: [], // 完整名單
+        availableNames: [], // 尚可抽的名單
+        drawState: DRAW_STATE.IDLE,
+        currentSession: null // { sessionId, drawStartedAt, drawEndedAt, winners: [] }
+    };
+    
+    // ---------------------- DOM 元素快取 ----------------------
+    const pages = {};
+    // 修正: 加入 controlBtn
+    let prizeFixedList, namesInput, nextStepBtn, totalParticipantsSpan, statusMessage;
+    let fukubikiContainer, drum, handle, resultBallElement, prizeDoneDisplay, controlArea, controlBtn; 
+    let balls = [];
+    // 移除 isDrawingSingle，依賴 async/await 確保序列執行
+
+    // ---------------------- 輔助函數 ----------------------
+    function formatDateTime(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        const h = String(date.getHours()).padStart(2, '0');
+        const min = String(date.getMinutes()).padStart(2, '0');
+        const s = String(date.getSeconds()).padStart(2, '0');
+        return `${y}-${m}-${d} ${h}:${min}:${s}`;
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+    
+    // 自定義提示框 (取代 alert/confirm)
+    function showModal(title, text) {
+        document.getElementById('modal-title').textContent = title;
+        document.getElementById('modal-text').textContent = text;
+        document.getElementById('custom-modal').classList.remove('hidden');
+        document.getElementById('modal-close-btn').onclick = () => {
+            document.getElementById('custom-modal').classList.add('hidden');
+        };
+    }
+    
+    // ---------------------- 狀態儲存與載入 ----------------------
+    function saveState() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    }
+
+    function loadState() {
+        const storedState = localStorage.getItem(STORAGE_KEY);
+        if (storedState) {
+            const loadedState = JSON.parse(storedState);
+            // 載入核心數據
+            appState.originalNames = loadedState.originalNames || [];
+            appState.availableNames = loadedState.availableNames || [];
+            appState.currentSession = loadedState.currentSession;
+            appState.drawState = loadedState.drawState || DRAW_STATE.IDLE;
+            appState.page = loadedState.page || 'settings';
+        }
+    }
+
+    function resetApp() {
+        // 使用自定義 Modal 取代 window.confirm
+        showModal('確認重新開始', '確認要清空所有設定與結果，並重新開始嗎？');
+        document.getElementById('modal-close-btn').textContent = '取消';
+        
+        const confirmBtn = document.createElement('button');
+        confirmBtn.className = 'cta-btn ml-3 bg-red-600 hover:bg-red-700';
+        confirmBtn.textContent = '確認清除';
+        
+        const modalBody = document.getElementById('custom-modal').querySelector('.glass-card');
+        modalBody.appendChild(confirmBtn);
+        
+        confirmBtn.onclick = () => {
+            localStorage.removeItem(STORAGE_KEY);
+            window.location.reload(); 
+        };
+        
+        document.getElementById('modal-close-btn').onclick = () => {
+             document.getElementById('custom-modal').classList.add('hidden');
+             confirmBtn.remove();
+        };
+    }
+
+    // ---------------------- 頁面導航 ----------------------
+    function navigate(pageName) {
+        if (!pages[pageName]) return;
+        
+        Object.values(pages).forEach(page => page.classList.add('hidden'));
+        pages[pageName].classList.remove('hidden');
+        appState.page = pageName;
+        
+        if (pageName === 'settings') {
+            updateSettingsUI();
+        } else if (pageName === 'raffle') {
+            setupRafflePage();
+        } else if (pageName === 'results') {
+            setupResultsPage();
+        }
+        
+        saveState();
+    }
+    
+    /**
+     * 從結果頁返回抽獎頁
+     */
+    function backToRaffle() {
+        if (!appState.currentSession) {
+            navigate('settings');
+        } else {
+            navigate('raffle');
+        }
+    }
+    
+    /**
+     * 安全地切換到結果頁面 (防止在抽獎中斷)
+     */
+    function viewResultsSafely() {
+        if (appState.drawState === DRAW_STATE.DRAWING) {
+            showModal('請稍候', '抽獎進行中，請等待本次抽出完成後再查看報告。');
+            return;
+        }
+        navigate('results');
+    }
+
+    // ---------------------- Page 1 邏輯：設定 ----------------------
+    function initializePrizeListHTML() {
+        document.getElementById('total-prizes-display').textContent = TOTAL_QUOTA;
+        
+        prizeFixedList.innerHTML = PRIZE_TIERS.map((p, index) => `
+            <div class="flex justify-between text-white/75">
+                <span class="font-medium">${p.tier}：${p.full}</span>
+                <span class="font-mono text-yellow-300">${p.quota} 名</span>
+            </div>
+        `).join('');
+    }
+
+    function updateNameList() {
+        // 去除重複，確保單一中獎原則
+        const names = [...new Set(namesInput.value.split('\n')
+            .map(name => name.trim())
+            .filter(name => name.length > 0))];
+        
+        appState.originalNames = names;
+        
+        updateSettingsUI();
+        saveState();
+    }
+
+    function updateSettingsUI() {
+        totalParticipantsSpan.textContent = appState.originalNames.length;
+        
+        const isNameListValid = appState.originalNames.length >= TOTAL_QUOTA;
+
+        if (isNameListValid) {
+            nextStepBtn.disabled = false;
+            nextStepBtn.textContent = '進入抽獎頁';
+            document.getElementById('min-participants-required').classList.remove('text-red-500');
+            document.getElementById('min-participants-required').classList.add('text-green-400');
+        } else {
+            nextStepBtn.disabled = true;
+            nextStepBtn.textContent = `名單人數不足 (${appState.originalNames.length} / ${TOTAL_QUOTA})`;
+            document.getElementById('min-participants-required').classList.remove('text-green-400');
+            document.getElementById('min-participants-required').classList.add('text-red-500');
+        }
+    }
+
+    function handleFileInput(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const content = e.target.result;
+            const currentNames = namesInput.value.trim();
+            
+            namesInput.value = currentNames.length > 0 
+                ? `${currentNames}\n${content}` 
+                : content;
+            
+            updateNameList();
+        };
+        reader.readAsText(file);
+    }
+    
+    function toRafflePage() {
+        updateNameList();
+        if (appState.originalNames.length < TOTAL_QUOTA) {
+            showModal('人數不足', `參與者名單人數 (${appState.originalNames.length}) 必須至少達到總獎項名額 (${TOTAL_QUOTA})。`);
+            return;
+        }
+
+        // 檢查是否是新會話或已完成的會話
+        if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
+            // 開始新的抽獎環節
+            appState.availableNames = shuffleArray(appState.originalNames.slice()); 
+            appState.currentSession = {
+                sessionId: Date.now(),
+                drawStartedAt: formatDateTime(new Date()),
+                drawEndedAt: null,
+                prizeDrawingIndex: 0, // 當前抽獎的獎項索引 (0-based)
+                winners: [] 
+            };
+            appState.drawState = DRAW_STATE.IDLE;
+        } 
+        
+        navigate('raffle');
+    }
+
+    // ---------------------- Page 2 邏輯：抽獎 ----------------------
+
+    /**
+     * 計算當前抽獎狀態和進度
+     */
+    function getPrizeDrawStatus() {
+        const totalDrawn = appState.currentSession.winners.length;
+        let currentTierIndex = appState.currentSession.prizeDrawingIndex;
+        
+        if (totalDrawn === TOTAL_QUOTA) {
+            return { isOverallComplete: true, currentPrize: null, currentPrizeDrawn: 0, isPrizeComplete: true, totalDrawn: totalDrawn, currentTierIndex: PRIZE_TIERS.length - 1 };
+        }
+
+        // 確保索引在範圍內
+        if (currentTierIndex >= PRIZE_TIERS.length) {
+            // 如果獎項已抽完，但狀態還沒更新為 ALL_DONE (理論上不該發生，但作為保護機制)
+            currentTierIndex = PRIZE_TIERS.length - 1;
+        }
+        
+        const currentPrize = PRIZE_TIERS[currentTierIndex];
+        
+        // 計算當前獎項之前已經抽出的總人數
+        let totalQuotaBeforeThisPrize = 0;
+        for (let i = 0; i < currentTierIndex; i++) {
+            totalQuotaBeforeThisPrize += PRIZE_TIERS[i].quota;
+        }
+        
+        // 計算當前獎項已抽人數
+        let currentPrizeDrawn = appState.currentSession.winners.filter(w => w.prizeTier === currentPrize.tier).length;
+
+        // 確認當前獎項索引是否需要推進（如果它是從 localStorage 載入，且該獎項已滿）
+        while (currentTierIndex < PRIZE_TIERS.length && 
+               appState.currentSession.winners.filter(w => w.prizeTier === PRIZE_TIERS[currentTierIndex].tier).length === PRIZE_TIERS[currentTierIndex].quota) {
+            currentTierIndex++;
+            currentPrizeDrawn = 0; // 重置已抽人數
+        }
+        
+        // 更新 prizeDrawingIndex
+        appState.currentSession.prizeDrawingIndex = currentTierIndex;
+        
+        if (currentTierIndex >= PRIZE_TIERS.length) {
+             return { isOverallComplete: true, currentPrize: null, currentPrizeDrawn: 0, isPrizeComplete: true, totalDrawn: totalDrawn, currentTierIndex: PRIZE_TIERS.length - 1 };
+        }
+        
+        const updatedCurrentPrize = PRIZE_TIERS[currentTierIndex];
+        const updatedCurrentPrizeDrawn = appState.currentSession.winners.filter(w => w.prizeTier === updatedCurrentPrize.tier).length;
+        const isPrizeComplete = updatedCurrentPrizeDrawn >= updatedCurrentPrize.quota;
+
+
+        return {
+            isOverallComplete: false,
+            currentPrize: updatedCurrentPrize,
+            currentPrizeDrawn: updatedCurrentPrizeDrawn,
+            isPrizeComplete: isPrizeComplete,
+            totalDrawn: totalDrawn,
+            currentTierIndex: currentTierIndex 
+        };
+    }
+
+
+    /**
+     * 更新抽獎頁面所有 UI
+     */
+    function updateRaffleUI() {
+        const status = getPrizeDrawStatus();
+        
+        // 如果已完成，立刻轉換為 ALL_DONE
+        if (status.isOverallComplete) {
+            appState.drawState = DRAW_STATE.ALL_DONE;
+            if (!appState.currentSession.drawEndedAt) {
+                 appState.currentSession.drawEndedAt = formatDateTime(new Date());
+            }
+        }
+        
+        const currentPrize = status.currentPrize || PRIZE_TIERS[PRIZE_TIERS.length - 1]; // fallback
+
+        // 總體進度
+        document.getElementById('overall-target-count').textContent = TOTAL_QUOTA;
+        document.getElementById('overall-drawn-count').textContent = status.totalDrawn;
+
+        // 獎項摘要列表 (高亮)
+        document.getElementById('raffle-prize-summary').innerHTML = PRIZE_TIERS.map((p, index) => {
+            const isCurrent = index === status.currentTierIndex && appState.drawState !== DRAW_STATE.ALL_DONE; 
+            const drawn = appState.currentSession.winners.filter(w => w.prizeTier === p.tier).length;
+            const isFinished = drawn === p.quota;
+
+            let className = `p-3 rounded-lg transition-all flex justify-between items-center text-base`;
+            if (isCurrent && !isFinished) {
+                className += ' bg-white/20 text-yellow-300 font-bold scale-[1.02]'; // 高亮當前
+            } else if (isFinished) {
+                className += ' bg-green-500/20 text-green-400 opacity-80'; // 完成
+            } else {
+                className += ' bg-white/5 text-white/75'; // 未開始/其他
+            }
+
+            return `<li class="${className}">
+                <span>${p.tier}：${p.full}</span>
+                <span class="font-mono">${drawn}/${p.quota}</span>
+            </li>`;
+        }).join('');
+
+        // 抽獎機控制區邏輯
+        controlArea.classList.remove('hidden');
+        prizeDoneDisplay.classList.add('hidden');
+        
+        // 確保動畫停止
+        fukubikiContainer.classList.remove('drum-spinning');
+        handle.classList.remove('handle-turning');
+        resultBallElement.classList.add('hidden');
+        
+        if (appState.drawState === DRAW_STATE.ALL_DONE) {
+            controlBtn.disabled = true;
+            controlBtn.textContent = '🎉 所有獎項已抽出';
+            statusMessage.textContent = '活動已圓滿結束。請查看完整報告。';
+            document.getElementById('prize-tier-text').textContent = '活動圓滿結束';
+            document.getElementById('draw-prompt').textContent = '所有獎項已全數抽出！';
+            document.getElementById('current-draw-progress').textContent = `${TOTAL_QUOTA}/${TOTAL_QUOTA}`;
+            
+        } else if (status.isPrizeComplete) {
+            appState.drawState = DRAW_STATE.PRIZE_DONE;
+            controlArea.classList.add('hidden');
+            prizeDoneDisplay.classList.remove('hidden');
+            
+            statusMessage.textContent = `✅ ${currentPrize.tier} 已抽完 (${currentPrize.quota}/${currentPrize.quota})。請複製名單或抽下一獎項。`;
+            document.getElementById('prize-tier-text').textContent = `獎項已完成：${currentPrize.tier}`;
+            document.getElementById('draw-prompt').textContent = currentPrize.full;
+            document.getElementById('current-draw-progress').textContent = `${currentPrize.quota}/${currentPrize.quota}`;
+            updateSinglePrizeDoneDisplay(currentPrize.tier);
+
+        } else if (appState.drawState === DRAW_STATE.DRAWING) {
+            // 抽獎進行中
+            controlBtn.disabled = true;
+            controlBtn.textContent = '抽獎中...請勿操作';
+            statusMessage.textContent = `機台正在旋轉... 抽取中`;
+            document.getElementById('prize-tier-text').textContent = `目前獎項：${currentPrize.tier}`;
+            document.getElementById('draw-prompt').textContent = currentPrize.full;
+            document.getElementById('current-draw-progress').textContent = `${status.currentPrizeDrawn}/${currentPrize.quota}`;
+            
+            // 啟動動畫 (在 DRAWING 狀態下才保持動畫)
+            fukubikiContainer.classList.add('drum-spinning');
+            handle.classList.add('handle-turning');
+
+        } else { // DRAW_STATE.IDLE
+            appState.drawState = DRAW_STATE.IDLE;
+            controlBtn.disabled = false;
+            controlBtn.textContent = `開始抽獎 (抽出 ${currentPrize.quota - status.currentPrizeDrawn} 名)`;
+            statusMessage.textContent = `請點擊按鈕，抽出【${currentPrize.tier}】剩餘得獎者。`;
+            document.getElementById('prize-tier-text').textContent = `目前獎項：${currentPrize.tier}`;
+            document.getElementById('draw-prompt').textContent = currentPrize.full;
+            document.getElementById('current-draw-progress').textContent = `${status.currentPrizeDrawn}/${currentPrize.quota}`;
+        }
+        
+        saveState();
+    }
+
+    /**
+     * 處理點擊抽獎按鈕或搖把
+     */
+    async function handleControlClick() {
+        if (appState.drawState !== DRAW_STATE.IDLE) return;
+        
+        appState.drawState = DRAW_STATE.DRAWING;
+        updateRaffleUI(); // 進入 DRAWING 狀態，UI 會啟動動畫
+        
+        const status = getPrizeDrawStatus();
+        const currentPrize = status.currentPrize;
+        const remainingDraws = currentPrize.quota - status.currentPrizeDrawn;
+        
+        if (remainingDraws <= 0) {
+            // 如果意外點擊，但該獎項已抽完
+            appState.drawState = DRAW_STATE.PRIZE_DONE;
+            updateRaffleUI();
+            return;
+        }
+
+        // 開始抽獎流程，一次抽完本獎項所有名額
+        for (let i = 0; i < remainingDraws; i++) {
+            if (appState.availableNames.length === 0) {
+                showModal('名單不足', '候選名單已用完！抽獎提前結束。'); 
+                appState.drawState = DRAW_STATE.ALL_DONE;
+                break;
+            }
+            
+            const drawCount = status.currentPrizeDrawn + i + 1;
+            statusMessage.textContent = `抽獎中... 正在抽取第 ${drawCount} 位得獎者 (共 ${currentPrize.quota} 位)`;
+            
+            // 執行單次抽獎
+            await drawOneWinner(currentPrize);
+            
+            // 更新進度條
+            // 這裡必須再次呼叫 getPrizeDrawStatus() 才能拿到最新的 progress 資訊
+            const newStatus = getPrizeDrawStatus(); 
+            // 這裡只更新 UI 資訊，保持 DRAWING 狀態直到循環結束
+            updateRaffleUI(); 
+
+            // 每次抽完後停頓 1.5 秒
+            if (i < remainingDraws - 1) {
+                await new Promise(resolve => setTimeout(resolve, 1500));
+            }
+        }
+        
+        // 流程結束，停止動畫（在 updateRaffleUI 中完成）
+        if (appState.drawState !== DRAW_STATE.ALL_DONE) {
+            appState.drawState = DRAW_STATE.PRIZE_DONE;
+        }
+        updateRaffleUI();
+    }
+
+    /**
+     * 抽取一位得獎者並執行動畫
+     */
+    async function drawOneWinner(prize) {
+        
+        resultBallElement.classList.add('hidden');
+        
+        // 1. 模擬彩球亂跳 (與 drum 旋轉同時發生)
+        balls.forEach(ball => {
+            const x = Math.random() * 260 + 20; // 300px drum - 40px padding
+            const y = Math.random() * 260 + 20;
+            ball.style.transform = `translate(${x}px, ${y}px)`;
+        });
+
+        // 保持旋轉 3 秒
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // 2. 選出得獎者
+        const winnerIndexInAvailable = Math.floor(Math.random() * appState.availableNames.length);
+        const winnerName = appState.availableNames.splice(winnerIndexInAvailable, 1)[0];
+        
+        statusMessage.textContent = `彩球出現！得獎者即將揭曉...`;
+        
+        // 3. 出球動畫
+        const winningBall = document.createElement('div');
+        winningBall.className = `ball ${prize.color} winning-ball`;
+        
+        // 設置起始位置 (在中心)
+        winningBall.style.left = '50%';
+        winningBall.style.top = '50%';
+        winningBall.style.transform = `translate(-50%, -50%) scale(1)`;
+        drum.appendChild(winningBall);
+        
+        // 第一步：從中心移動到出球口
+        winningBall.style.transform = `translate(-50%, 120px) scale(1.1)`;
+        await new Promise(resolve => setTimeout(resolve, 500));
+
+        // 第二步：掉到托盤並顯示
+        resultBallElement.className = `w-8 h-8 rounded-full flex justify-center items-center text-xs font-black shadow-2xl ${prize.color}`;
+        resultBallElement.textContent = prize.tier.slice(0, 1); // 顯示 '伍' '肆'
+        resultBallElement.classList.remove('hidden');
+        
+        // 移除動畫球
+        winningBall.remove(); 
+
+        // 記錄結果
+        const drawnAt = new Date();
+        const winnerRecord = {
+            prizeTier: prize.tier,
+            prizeFullName: prize.full,
+            prizeName: prize.name,
+            winnerName: winnerName,
+            drawnAt: formatDateTime(drawnAt)
+        };
+        appState.currentSession.winners.push(winnerRecord);
+
+        statusMessage.textContent = `恭喜【${prize.tier}】得獎者：${winnerName}！`;
+        
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        return;
+    }
+
+    /**
+     * 初始化抽獎機彩球
+     */
+    function createBalls() {
+        const chamberSize = 300 * 0.9; // 90% of 300px
+        
+        balls = [];
+        document.getElementById('balls-container').innerHTML = '';
+
+        for (let i = 0; i < NUM_DECORATION_BALLS; i++) {
+            const colorClass = BALL_COLORS_DECORATION[i % BALL_COLORS_DECORATION.length];
+            const ball = document.createElement('div');
+            ball.className = `ball ${colorClass} absolute opacity-80`; 
+
+            // 確保球不會出界
+            const x = Math.random() * (chamberSize - 40) + 20; 
+            const y = Math.random() * (chamberSize - 40) + 20;
+
+            ball.style.transform = `translate(${x}px, ${y}px)`;
+            
+            document.getElementById('balls-container').appendChild(ball);
+            balls.push(ball);
+        }
+    }
+
+    function setupRafflePage() {
+        if (!appState.currentSession) {
+            navigate('settings');
+            return;
+        }
+        createBalls();
+        updateRaffleUI();
+    }
+    
+    function handleNextPrize() {
+        // 確保當前狀態是 PRIZE_DONE 才能抽下一獎項
+        if (appState.drawState === DRAW_STATE.PRIZE_DONE) {
+            // 不需要手動增加 prizeDrawingIndex，因為 getPrizeDrawStatus 會自動推進
+            appState.drawState = DRAW_STATE.IDLE;
+            updateRaffleUI();
+        }
+    }
+    
+    // ---------------------- Prize Done 顯示 ----------------------
+    function updateSinglePrizeDoneDisplay(prizeTier) {
+        document.getElementById('prize-done-title').textContent = `${prizeTier} 得獎名單 (${PRIZE_TIERS.find(p => p.tier === prizeTier).quota} 名)`;
+        
+        const winnersForCurrentPrize = appState.currentSession.winners.filter(w => w.prizeTier === prizeTier);
+        const tbody = document.getElementById('prize-done-winners-body');
+        tbody.innerHTML = ''; 
+
+        winnersForCurrentPrize.forEach((w, index) => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-white/10 text-white/90 hover:bg-white/10';
+            tr.innerHTML = `
+                <td class="py-3 px-3 font-bold text-yellow-300">${index + 1}</td>
+                <td class="py-3 px-3 font-medium">${w.winnerName}</td>
+                <td class="py-3 px-3 text-sm text-white/70">${w.drawnAt}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+        
+        // 更新按鈕邏輯
+        const nextPrizeBtn = prizeDoneDisplay.querySelector('button:last-child');
+        const status = getPrizeDrawStatus();
+        
+        // 判斷是否已經是最後一個獎項
+        const isLastPrize = status.currentTierIndex === PRIZE_TIERS.length - 1; 
+
+        // 檢查當前這個已完成的獎項是否就是 PRIZE_TIERS[PRIZE_TIERS.length - 1]
+        // 且它確實已經滿額了 (狀態機已經設為 PRIZE_DONE)
+        const currentTier = PRIZE_TIERS[status.currentTierIndex];
+        const isCurrentPrizeCompleted = appState.currentSession.winners.filter(w => w.prizeTier === currentTier.tier).length === currentTier.quota;
+
+        if (isLastPrize && isCurrentPrizeCompleted) {
+            nextPrizeBtn.textContent = '完成抽獎，查看報告';
+            nextPrizeBtn.onclick = () => navigate('results');
+        } else {
+            nextPrizeBtn.textContent = '抽下一獎項';
+            nextPrizeBtn.onclick = handleNextPrize;
+        }
+    }
+
+    function copySinglePrizeResults() {
+        const status = getPrizeDrawStatus();
+        const currentPrize = status.currentPrize || PRIZE_TIERS[appState.currentSession.prizeDrawingIndex - 1]; // 如果在 PRIZE_DONE 狀態，currentPrize 可能已經是下一個，所以要找上一個
+        const prizeTier = currentPrize.tier;
+        const prizeFull = currentPrize.full;
+        const winners = appState.currentSession.winners.filter(w => w.prizeTier === prizeTier);
+        
+        const header = `【${prizeTier} 得獎名單】 - ${prizeFull}\n\n`;
+        const list = winners.map((w, index) => 
+            `No.${index + 1} | 姓名: ${w.winnerName} | 抽出時間: ${w.drawnAt}`
+        ).join('\n');
+        
+        copyToClipboard(header + list, `【${prizeTier}】名單已複製！`);
+    }
+
+    function downloadSinglePrizeCSV() {
+        const status = getPrizeDrawStatus();
+        const currentPrize = status.currentPrize || PRIZE_TIERS[appState.currentSession.prizeDrawingIndex - 1];
+        const prizeTier = currentPrize.tier;
+        const winners = appState.currentSession.winners.filter(w => w.prizeTier === prizeTier);
+        
+        let csvContent = "Rank,PrizeTier,PrizeName,WinnerName,DrawTime\n";
+        winners.forEach((w, index) => {
+            csvContent += `"${index + 1}","${w.prizeTier}","${w.prizeName}","${w.winnerName}","${w.drawnAt}"\n`;
+        });
+
+        downloadFile(csvContent, `Raffle_Report_${prizeTier}.csv`);
+    }
+
+    // ---------------------- Page 3 邏輯：結果 ----------------------
+    function setupResultsPage() {
+        if (!appState.currentSession) return;
+        
+        document.getElementById('draw-time-started').textContent = appState.currentSession.drawStartedAt;
+        document.getElementById('draw-time-ended').textContent = appState.currentSession.drawEndedAt || '尚未完成';
+        
+        const tbody = document.getElementById('results-table-body');
+        tbody.innerHTML = ''; 
+
+        appState.currentSession.winners.forEach(winner => {
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-white/10 hover:bg-white/10 transition-colors';
+            tr.innerHTML = `
+                <td class="p-3 font-bold text-yellow-300">${winner.prizeTier}</td>
+                <td class="p-3">${winner.prizeName}</td>
+                <td class="p-3 font-bold text-white">${winner.winnerName}</td>
+                <td class="p-3 text-sm text-white/70">${winner.drawnAt}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function copyAllResults() {
+        if (!appState.currentSession || appState.currentSession.winners.length === 0) {
+            showModal('錯誤', '沒有可複製的得獎名單！');
+            return;
+        }
+
+        const header = `【福引き完整抽獎報告】\n開始: ${appState.currentSession.drawStartedAt}\n結束: ${appState.currentSession.drawEndedAt || '尚未完成'}\n\n`;
+        const list = appState.currentSession.winners.map((w, index) => 
+            `No.${index + 1} | 獎項: ${w.prizeTier} | 獎品: ${w.prizeName} | 得獎者: ${w.winnerName} | 抽出時間: ${w.drawnAt}`
+        ).join('\n');
+        
+        copyToClipboard(header + list, '完整報告已成功複製到剪貼簿！');
+    }
+
+    function downloadFullCSV() {
+        if (!appState.currentSession || appState.currentSession.winners.length === 0) {
+            showModal('錯誤', '沒有可下載的得獎名單！');
+            return;
+        }
+
+        let csvContent = "Index,PrizeTier,PrizeName,WinnerName,DrawTime\n";
+        appState.currentSession.winners.forEach((w, index) => {
+            csvContent += `"${index + 1}","${w.prizeTier}","${w.prizeName}","${w.winnerName}","${w.drawnAt}"\n`;
+        });
+
+        downloadFile(csvContent, `Fukubiki_Full_Report_${appState.currentSession.sessionId}.csv`);
+    }
+
+    // ---------------------- 通用工具函數 ----------------------
+    function copyToClipboard(text, successMessage) {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        try {
+            document.execCommand('copy');
+            showModal('成功', successMessage);
+        } catch (err) {
+            console.error('Copy failed:', err);
+            showModal('複製失敗', '無法自動複製到剪貼簿，請手動複製。');
+        }
+        document.body.removeChild(textarea);
+    }
+    
+    function downloadFile(content, filename) {
+        const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showModal('成功', `檔案 ${filename} 已開始下載。`);
+    }
+    
+    // ---------------------- 應用程式初始化 ----------------------
+    window.onload = () => {
+        // 1. DOM 快取
+        pages.settings = document.getElementById('page-settings');
+        pages.raffle = document.getElementById('page-raffle');
+        pages.results = document.getElementById('page-results');
+        
+        prizeFixedList = document.getElementById('prize-fixed-list');
+        namesInput = document.getElementById('names-input');
+        nextStepBtn = document.getElementById('next-step-btn');
+        totalParticipantsSpan = document.getElementById('total-participants');
+        statusMessage = document.getElementById('status-message');
+
+        // 抽獎機相關
+        fukubikiContainer = document.getElementById('fukubiki-container'); 
+        drum = document.getElementById('drum');
+        handle = document.getElementById('handle');
+        resultBallElement = document.getElementById('result-ball');
+        prizeDoneDisplay = document.getElementById('prize-done-display');
+        controlArea = document.getElementById('control-area');
+        
+        // 修正: 初始化 controlBtn
+        controlBtn = document.getElementById('control-btn'); 
+
+        // 2. 初始化並載入狀態
+        initializePrizeListHTML();
+        loadState();
+        updateNameList(); 
+        
+        // 3. 設置事件監聽器
+        namesInput.addEventListener('input', updateNameList);
+        
+        // 4. 導航至正確的頁面
+        if (appState.page === 'raffle' && appState.currentSession) {
+             navigate('raffle');
+        } else if (appState.page === 'results' && appState.currentSession) {
+             navigate('results');
+        } else {
+             navigate('settings');
+        }
+    };
+</script>
+
+</body>
+</html>
