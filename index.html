@@ -617,7 +617,7 @@
         resultTicketDisplay.classList.add('ticket-revealing');
         
         statusMessage.innerHTML = `恭喜 <span class="text-yellow-300 text-2xl font-black">${name}</span> 中獎！`;
-        await new Promise(r => setTimeout(r, 1200));
+        await new Promise(r => setTimeout(r, 3000));
         
         appState.drawState = DRAW_STATE.IDLE;
         updateRaffleUI();
