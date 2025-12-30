@@ -418,41 +418,30 @@
         document.body.removeChild(element);
     }
 
-    function handleFileInput(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            const content = e.target.result;
-            function handleFileInput(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const content = e.target.result;
-        
-        // 1. 先按換行符拆分每一行
-        const lines = content.split(/\r?\n/);
-        
-        // 2. 處理每一行：將內部的逗號 (CSV 欄位分隔) 換成 ｜
-        const formattedNames = lines.map(line => {
-            const cleanLine = line.trim();
-            if (!cleanLine) return null;
-            
-            // 將逗號替換成 ｜ (假設 CSV 只有兩欄：姓名,車款)
-            // 使用 replace(/,/g, '｜') 會把所有逗號都換掉
-            return cleanLine.replace(/,/g, '｜');
-        }).filter(n => n);
+   function handleFileInput(event) {
+  const file = event.target.files[0];
+  if (!file) return;
 
-        namesInput.value = formattedNames.join('\n');
-        updateNameList();
-    };
-    reader.readAsText(file, 'UTF-8');
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = String(e.target.result || '');
+
+    const lines = content.split(/\r?\n/);
+
+    const formattedNames = lines
+      .map(line => line.trim())
+      .filter(Boolean)
+      .map(line => line.replace(/,/g, '｜'));
+
+    namesInput.value = formattedNames.join('\n');
+    updateNameList();
+
+    // 允許同一檔案重複上傳
+    event.target.value = '';
+  };
+
+  reader.readAsText(file, 'UTF-8');
 }
-            updateNameList();
-        };
-        reader.readAsText(file, 'UTF-8');
-    }
 
     // --- UI 初始化 ---
     function initializePrizeListHTML() {
