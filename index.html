@@ -564,7 +564,7 @@
                         <span class="text-sm font-bold ${isCurrent ? 'text-yellow-300' : 'text-white/60'}">${p.tier}</span>
                         <span class="text-xs font-mono ${isDone ? 'text-green-400' : 'text-white/50'}">${drawn}/${p.quota}</span>
                     </div>
-                    <div class="text-base font-black truncate ${isCurrent ? 'text-white' : 'text-white/80'}">${p.name}</div>
+                    <div class="text-base font-black break-words whitespace-normal ${isCurrent ? 'text-white' : 'text-white/80'}">${p.name}</div>
                     ${isCurrent ? '<div class="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-yellow-300 transition-all" style="width:'+(drawn/p.quota*100)+'%"></div></div>' : ''}
                 </li>
             `;
