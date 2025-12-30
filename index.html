@@ -630,7 +630,11 @@
         });
 
         document.getElementById('res-prize-name').textContent = prize.tier;
-        document.getElementById('res-winner-name').textContent = name;
+        const [nick, car] = String(name).split('｜').map(s => s?.trim()).filter(Boolean);
+document.getElementById('res-winner-name').innerHTML = `
+  <div style="font-weight:900; font-size:34px; line-height:1.05;">${nick || ''}</div>
+  ${car ? `<div style="margin-top:6px; font-weight:800; font-size:20px; line-height:1.2;">${car}</div>` : ''}
+`;       
         document.getElementById('res-time').textContent = now.split(' ')[1];
         
         resultTicketDisplay.classList.remove('hidden');
