@@ -519,7 +519,12 @@
 
     function toRafflePage() {
         if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
-            appState.availableNames = shuffleArray([...appState.originalNames]);
+// 建立抽獎池（先保護頭獎指定名單）
+const protectedNames = FIXED_WINNERS['頭獎'] || [];
+
+appState.availableNames = shuffleArray(
+  appState.originalNames.filter(name => !protectedNames.includes(name))
+);            
             appState.currentSession = {
                 drawStartedAt: formatDateTime(new Date()),
                 prizeDrawingIndex: 0,
