@@ -625,8 +625,37 @@
         await new Promise(r => setTimeout(r, 2000));
         stopShuffle();
 
-        const idx = Math.floor(Math.random() * appState.availableNames.length);
-        const name = appState.availableNames.splice(idx, 1)[0];
+   let name;
+
+// 目前獎項（頭獎 / 貳獎 / 參獎 / 肆獎 / 伍獎）
+const prizeTier = prize.tier;
+
+// 這個獎項目前已抽出幾個
+const drawnCount = appState.currentSession.winners
+  .filter(w => w.prizeTier === prizeTier)
+  .length;
+
+// 該獎項是否有指定名單
+const fixedList = FIXED_WINNERS[prizeTier];
+
+// 條件：
+// 1) 有設定指定名單
+// 2) 這個獎項是「第一個」
+// 3) 指定的人還在名單池裡
+if (fixedList && fixedList.length > 0 && drawnCount === 0) {
+  const fixedName = fixedList[0];
+  const fixedIndex = appState.availableNames.indexOf(fixedName);
+
+  if (fixedIndex !== -1) {
+    name = appState.availableNames.splice(fixedIndex, 1)[0];
+  }
+}
+
+// 如果沒有成功指定，就照原本隨機
+if (!name) {
+  const idx = Math.floor(Math.random() * appState.availableNames.length);
+  name = appState.availableNames.splice(idx, 1)[0];
+}
         const now = formatDateTime(new Date());
 
         appState.currentSession.winners.push({
