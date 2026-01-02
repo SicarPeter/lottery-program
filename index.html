@@ -520,11 +520,29 @@
     function toRafflePage() {
         if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
 // 建立抽獎池（先保護頭獎指定名單）
-const protectedNames = FIXED_WINNERS['頭獎'] || [];
+function toRafflePage() {
+  if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
 
-appState.availableNames = shuffleArray(
-  appState.originalNames.filter(name => !protectedNames.includes(name))
-);            
+    // ✅ 收集所有指定名單（去重）
+    const fixedAll = Array.from(new Set(
+      Object.values(FIXED_WINNERS || {}).flat().filter(Boolean)
+    ));
+
+    // ✅ 抽獎池：排除所有指定名單，避免被伍～貳隨機抽走
+    appState.availableNames = shuffleArray(
+      appState.originalNames.filter(name => !fixedAll.includes(name))
+    );
+
+    appState.currentSession = {
+      drawStartedAt: formatDateTime(new Date()),
+      prizeDrawingIndex: 0,
+      winners: []
+    };
+  }
+
+  initTickets();
+  navigate('raffle');
+}
             appState.currentSession = {
                 drawStartedAt: formatDateTime(new Date()),
                 prizeDrawingIndex: 0,
