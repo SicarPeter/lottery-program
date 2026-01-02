@@ -609,79 +609,103 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
     }
 
-    async function handleControlClick() {
-        if (appState.drawState !== DRAW_STATE.IDLE) return;
-        const status = getDrawStatus();
-        const prize = status.currentPrize;
-        if (appState.availableNames.length === 0) return showModal('錯誤', '名單已用完');
+   async function handleControlClick() {
+  if (appState.drawState !== DRAW_STATE.IDLE) return;
 
-        appState.drawState = DRAW_STATE.DRAWING;
-        controlBtn.disabled = true;
-        resultTicketDisplay.classList.add('hidden', 'opacity-0');
-        resultTicketDisplay.classList.remove('ticket-revealing');
+  const status = getDrawStatus();
+  const prize = status.currentPrize;
+  if (!prize) return;
 
-        startShuffle();
-        statusMessage.textContent = '正在攪拌抽籤箱...';
-        await new Promise(r => setTimeout(r, 2000));
-        stopShuffle();
-
-   let name;
-
-// 目前獎項（頭獎 / 貳獎 / 參獎 / 肆獎 / 伍獎）
-const prizeTier = prize.tier;
-
-// 這個獎項目前已抽出幾個
-const drawnCount = appState.currentSession.winners
-  .filter(w => w.prizeTier === prizeTier)
-  .length;
-
-// 該獎項是否有指定名單
-const fixedList = FIXED_WINNERS[prizeTier];
-
-// 條件：
-// 1) 有設定指定名單
-// 2) 這個獎項是「第一個」
-// 3) 指定的人還在名單池裡
-if (fixedList && fixedList.length > 0 && drawnCount === 0) {
-  const fixedName = fixedList[0];
-  const fixedIndex = appState.availableNames.indexOf(fixedName);
-
-  if (fixedIndex !== -1) {
-    name = appState.availableNames.splice(fixedIndex, 1)[0];
+  if (appState.availableNames.length === 0) {
+    return showModal('錯誤', '名單已用完');
   }
-}
 
-// 如果沒有成功指定，就照原本隨機
-if (!name) {
-  const idx = Math.floor(Math.random() * appState.availableNames.length);
-  name = appState.availableNames.splice(idx, 1)[0];
-}
-        const now = formatDateTime(new Date());
+  appState.drawState = DRAW_STATE.DRAWING;
+  controlBtn.disabled = true;
+  resultTicketDisplay.classList.add('hidden', 'opacity-0');
+  resultTicketDisplay.classList.remove('ticket-revealing');
 
-        appState.currentSession.winners.push({
-            prizeTier: prize.tier,
-            prizeName: prize.name,
-            winnerName: name,
-            drawnAt: now
-        });
+  // 攪拌一次
+  startShuffle();
+  statusMessage.textContent = `正在攪拌抽籤箱，準備抽出 ${prize.tier}（共 ${prize.quota} 名）...`;
+  await new Promise(r => setTimeout(r, 2000));
+  stopShuffle();
 
-        document.getElementById('res-prize-name').textContent = prize.tier;
-        const [nick, car] = String(name).split('｜').map(s => s?.trim()).filter(Boolean);
-document.getElementById('res-winner-name').innerHTML = `
-  <div style="font-weight:900; font-size:34px; line-height:1.05;">${nick || ''}</div>
-  ${car ? `<div style="margin-top:6px; font-weight:800; font-size:20px; line-height:1.2;">${car}</div>` : ''}
-`;       
-        document.getElementById('res-time').textContent = now.split(' ')[1];
-        
-        resultTicketDisplay.classList.remove('hidden');
-        resultTicketDisplay.classList.add('ticket-revealing');
-        
-        statusMessage.innerHTML = `恭喜 <span class="text-yellow-300 text-2xl font-black">${name}</span> 中獎！`;
-        await new Promise(r => setTimeout(r, 3000));
-        
-        appState.drawState = DRAW_STATE.IDLE;
-        updateRaffleUI();
+  // 這個獎項已抽出幾個
+  const alreadyDrawn = appState.currentSession.winners
+    .filter(w => w.prizeTier === prize.tier)
+    .length;
+
+  const remaining = prize.quota - alreadyDrawn;
+
+  for (let i = 0; i < remaining; i++) {
+    if (appState.availableNames.length === 0) break;
+
+    let name = null;
+
+    // 🔒 指定名單只用在「第一個」
+    if (i === 0 && FIXED_WINNERS?.[prize.tier]?.length) {
+      const fixedName = FIXED_WINNERS[prize.tier][0];
+      const idx = appState.availableNames.indexOf(fixedName);
+      if (idx !== -1) {
+        name = appState.availableNames.splice(idx, 1)[0];
+      }
     }
+
+    // 沒指定到就隨機
+    if (!name) {
+      const idx = Math.floor(Math.random() * appState.availableNames.length);
+      name = appState.availableNames.splice(idx, 1)[0];
+    }
+
+    const now = formatDateTime(new Date());
+
+    appState.currentSession.winners.push({
+      prizeTier: prize.tier,
+      prizeName: prize.name,
+      winnerName: name,
+      drawnAt: now
+    });
+
+    // 顯示畫面（顯示最後一位即可）
+    document.getElementById('res-prize-name').textContent = prize.tier;
+
+    const [nick, car] = String(name)
+      .split('｜')
+      .map(s => s?.trim())
+      .filter(Boolean);
+
+    document.getElementById('res-winner-name').innerHTML = `
+      <div style="font-weight:900; font-size:34px; line-height:1.05;">
+        ${nick || ''}
+      </div>
+      ${car ? `
+        <div style="margin-top:6px; font-weight:800; font-size:20px; line-height:1.2;">
+          ${car}
+        </div>` : ''}
+    `;
+
+    document.getElementById('res-time').textContent = now.split(' ')[1];
+
+    resultTicketDisplay.classList.remove('hidden');
+    resultTicketDisplay.classList.add('ticket-revealing');
+
+    statusMessage.innerHTML = `
+      ${prize.tier} 抽取中：
+      <span class="text-yellow-300 font-black">
+        ${alreadyDrawn + i + 1} / ${prize.quota}
+      </span>
+    `;
+
+    await new Promise(r => setTimeout(r, 700));
+    resultTicketDisplay.classList.remove('ticket-revealing');
+  }
+
+  statusMessage.textContent = `${prize.tier} 已一次抽完`;
+
+  appState.drawState = DRAW_STATE.IDLE;
+  updateRaffleUI();
+}
 
     function handleNextPrize() {
         appState.drawState = DRAW_STATE.IDLE;
