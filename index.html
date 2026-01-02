@@ -643,6 +643,15 @@ appState.availableNames = shuffleArray(
 
   const remaining = prize.quota - alreadyDrawn;
 
+       // 🧩 若為頭獎，將指定名單放回抽獎池（只放一次）
+if (prize.tier === '頭獎' && FIXED_WINNERS['頭獎']?.length) {
+  FIXED_WINNERS['頭獎'].forEach(name => {
+    if (!appState.availableNames.includes(name)) {
+      appState.availableNames.push(name);
+    }
+  });
+}
+
   for (let i = 0; i < remaining; i++) {
     if (appState.availableNames.length === 0) break;
 
