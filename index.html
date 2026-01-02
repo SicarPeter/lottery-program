@@ -1,382 +1,382 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>標車酷線上抽獎系統 - 抽籤箱版</title>
-    <!-- 引入 Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
-    <style>
-        /* ------------------ 全局與配色 ------------------ */
-        :root {
-            --bg-color: #191935;
-            --accent-color: #D9F107; /* 亮黃綠色 */
-            --text-color: #ffffff;
-            --text-secondary: rgba(255, 255, 255, 0.75);
-            --card-bg: rgba(255, 255, 255, 0.06); 
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>標車酷線上抽獎系統 - 抽籤箱版</title>
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
-            min-height: 100vh;
-            padding: 20px;
-        }
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet" />
 
-        /* ------------------ 按鈕與卡片 ------------------ */
-        .cta-btn {
-            background-color: var(--accent-color);
-            color: #191935;
-            font-weight: 800;
-            padding: 12px 24px;
-            border-radius: 0.75rem;
-            transition: all 0.2s ease-in-out;
-            box-shadow: 0 4px 15px rgba(217, 241, 7, 0.5);
-            line-height: 1.2;
-        }
-        .cta-btn:hover {
-            box-shadow: 0 0 25px rgba(217, 241, 7, 0.8);
-            transform: translateY(-1px) scale(1.01);
-        }
-        .cta-btn:disabled {
-            background-color: #4a4a66;
-            color: #b3b3b3;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
-        }
+  <style>
+    :root {
+      --bg-color: #191935;
+      --accent-color: #D9F107;
+      --text-color: #ffffff;
+      --text-secondary: rgba(255, 255, 255, 0.75);
+      --card-bg: rgba(255, 255, 255, 0.06);
+    }
 
-        .glass-card {
-            background: var(--card-bg);
-            border-radius: 1rem;
-            backdrop-filter: blur(8px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
-        }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 20px;
+    }
 
-        /* ------------------ 抽籤箱樣式 ------------------ */
-        .lottery-stage {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            min-height: 500px;
-            position: relative;
-        }
+    .cta-btn {
+      background-color: var(--accent-color);
+      color: #191935;
+      font-weight: 800;
+      padding: 12px 24px;
+      border-radius: 0.75rem;
+      transition: all 0.2s ease-in-out;
+      box-shadow: 0 4px 15px rgba(217, 241, 7, 0.5);
+      line-height: 1.2;
+    }
+    .cta-btn:hover {
+      box-shadow: 0 0 25px rgba(217, 241, 7, 0.8);
+      transform: translateY(-1px) scale(1.01);
+    }
+    .cta-btn:disabled {
+      background-color: #4a4a66;
+      color: #b3b3b3;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
 
-        #lottery-box {
-            width: 320px;
-            height: 320px;
-            position: relative;
-            background: rgba(255, 255, 255, 0.05);
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            border-radius: 1rem;
-            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
-            overflow: hidden;
-            margin-top: 20px;
-            perspective: 1000px;
-        }
+    .glass-card {
+      background: var(--card-bg);
+      border-radius: 1rem;
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+    }
 
-        #lottery-box::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60px;
-            background: linear-gradient(to bottom, rgba(217, 241, 7, 0.1), transparent);
-            pointer-events: none;
-            z-index: 10;
-        }
+    .lottery-stage {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 500px;
+      position: relative;
+    }
 
-        #tickets-container {
-            width: 100%;
-            height: 100%;
-            position: relative;
-            transform-style: preserve-3d;
-        }
+    #lottery-box {
+      width: 320px;
+      height: 320px;
+      position: relative;
+      background: rgba(255, 255, 255, 0.05);
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1rem;
+      box-shadow: 0 0 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.1);
+      overflow: hidden;
+      margin-top: 20px;
+      perspective: 1000px;
+    }
 
-        .ticket {
-            width: 60px;
-            height: 30px;
-            background-color: #fff;
-            position: absolute;
-            border-radius: 2px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-            opacity: 0.9;
-            transition: transform 0.5s ease-out;
-        }
-        
-        .ticket::after {
-            content: '';
-            position: absolute;
-            left: 5px; right: 5px; top: 5px; bottom: 5px;
-            border: 1px dashed #ccc;
-        }
+    #lottery-box::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      background: linear-gradient(to bottom, rgba(217, 241, 7, 0.1), transparent);
+      pointer-events: none;
+      z-index: 10;
+    }
 
-        /* 攪拌動畫 */
-        @keyframes fly-around {
-            0% { transform: translate3d(var(--tx), var(--ty), var(--tz)) rotate(var(--r)); }
-            25% { transform: translate3d(var(--tx2), var(--ty2), var(--tz2)) rotate(var(--r2)); }
-            50% { transform: translate3d(var(--tx3), var(--ty3), var(--tz3)) rotate(var(--r3)); }
-            75% { transform: translate3d(var(--tx4), var(--ty4), var(--tz4)) rotate(var(--r4)); }
-            100% { transform: translate3d(var(--tx), var(--ty), var(--tz)) rotate(var(--r)); }
-        }
+    #tickets-container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+    }
 
-        .ticket.shuffling {
-            animation: fly-around 2s infinite linear; 
-        }
+    .ticket {
+      width: 60px;
+      height: 30px;
+      background-color: #fff;
+      position: absolute;
+      border-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+      opacity: 0.9;
+      transition: transform 0.5s ease-out;
+    }
 
-        /* 結果票卷展示 */
-        #result-ticket-display {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%) scale(0);
-    width: 360px;          /* ✅ 變寬 */
-    height: 170px;         /* ✅ 稍微加高 */
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 20px 50px rgba(0,0,0,0.8);
-    z-index: 50;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;    /* ✅ 置中 */
-    border: 4px solid var(--accent-color);
-    opacity: 0;
-    pointer-events: none;
-    padding: 12px;         /* ✅ 留白 */
-}
+    .ticket::after {
+      content: '';
+      position: absolute;
+      left: 5px; right: 5px; top: 5px; bottom: 5px;
+      border: 1px dashed #ccc;
+    }
 
-        @keyframes ticket-reveal {
-            0% { transform: translate(-50%, 50px) scale(0.1) rotate(720deg); opacity: 0; }
-            60% { transform: translate(-50%, -60px) scale(1.1) rotate(-10deg); opacity: 1; }
-            80% { transform: translate(-50%, -50%) scale(0.95) rotate(5deg); }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
-        }
+    @keyframes fly-around {
+      0%   { transform: translate3d(var(--tx),  var(--ty),  var(--tz)) rotate(var(--r)); }
+      25%  { transform: translate3d(var(--tx2), var(--ty2), var(--tz2)) rotate(var(--r2)); }
+      50%  { transform: translate3d(var(--tx3), var(--ty3), var(--tz3)) rotate(var(--r3)); }
+      75%  { transform: translate3d(var(--tx4), var(--ty4), var(--tz4)) rotate(var(--r4)); }
+      100% { transform: translate3d(var(--tx),  var(--ty),  var(--tz)) rotate(var(--r)); }
+    }
 
-        .ticket-revealing {
-            animation: ticket-reveal 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
+    .ticket.shuffling {
+      animation: fly-around 2s infinite linear;
+    }
 
-        /* ------------------ 佈局 ------------------ */
-        .raffle-main-grid {
-            display: grid;
-            grid-template-columns: 460px minmax(0, 1fr);
-            gap: 1.5rem;
-            align-items: start;
-        }
-        .raffle-sidebar {
-            position: sticky;
-            top: 20px;
-            max-height: calc(100vh - 40px);
-            overflow-y: auto;
-        }
-        @media (max-width: 1024px) {
-            .raffle-main-grid { grid-template-columns: 1fr; }
-            .raffle-sidebar { position: static; max-height: none; }
-        }
-    </style>
+    #result-ticket-display {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      width: 360px;
+      height: 170px;
+      background: #ffffff;
+      border-radius: 12px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      border: 4px solid var(--accent-color);
+      opacity: 0;
+      pointer-events: none;
+      padding: 12px;
+    }
+
+    @keyframes ticket-reveal {
+      0%   { transform: translate(-50%, 50px) scale(0.1) rotate(720deg); opacity: 0; }
+      60%  { transform: translate(-50%, -60px) scale(1.1) rotate(-10deg); opacity: 1; }
+      80%  { transform: translate(-50%, -50%) scale(0.95) rotate(5deg); }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .ticket-revealing {
+      animation: ticket-reveal 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
+
+    .raffle-main-grid {
+      display: grid;
+      grid-template-columns: 460px minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+    .raffle-sidebar {
+      position: sticky;
+      top: 20px;
+      max-height: calc(100vh - 40px);
+      overflow-y: auto;
+    }
+    @media (max-width: 1024px) {
+      .raffle-main-grid { grid-template-columns: 1fr; }
+      .raffle-sidebar { position: static; max-height: none; }
+    }
+  </style>
 </head>
+
 <body>
-
 <div id="app-container" class="w-full max-w-6xl mx-auto">
+  <header class="text-center mb-10">
+    <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest uppercase">標車酷線上抽籤箱</h1>
+    <p class="text-lg mt-2 text-white/75">幸運抽籤系統</p>
+  </header>
 
-    <header class="text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-black text-white tracking-widest uppercase">標車酷線上抽籤箱</h1>
-        <p class="text-lg mt-2 text-white/75">幸運抽籤系統</p>
-    </header>
+  <!-- Page 1: Settings -->
+  <section id="page-settings" class="transition-opacity duration-500">
+    <div class="glass-card p-8 space-y-8">
+      <h2 class="text-2xl font-bold border-b border-white/20 pb-3 text-white">活動設定與名單輸入</h2>
 
-    <!-- 頁面 1: 設定 -->
-    <section id="page-settings" class="transition-opacity duration-500">
-        <div class="glass-card p-8 space-y-8">
-            <h2 class="text-2xl font-bold border-b border-white/20 pb-3 text-white">活動設定與名單輸入</h2>
-            <div class="p-5 bg-white/5 rounded-xl">
-                <h3 class="font-bold text-xl text-white mb-4">本次活動總覽</h3>
-                <div class="flex justify-between items-center text-lg font-bold border-b border-white/20 pb-2 mb-2">
-                    <span>抽獎順序與獎項</span>
-                    <span>名額</span>
-                </div>
-                <div id="prize-fixed-list" class="space-y-1 text-white/90"></div>
-                <p class="text-xl font-black text-white/90 pt-3 border-t border-white/20 mt-3">
-                    本次總獎項名額：<span id="total-prizes-display" class="text-4xl text-yellow-300"></span> 名
-                </p>
-            </div>
-            <div>
-                <label for="names-input" class="block mb-3 font-semibold text-white/90">請貼上/輸入抽獎名單 (每行一位)：</label>
-                <textarea id="names-input" rows="10" class="w-full bg-black/30 border border-white/20 p-4 rounded-lg text-white resize-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300"></textarea>
-                <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
-                    <label class="cta-btn cursor-pointer text-base">
-                        上傳 .txt/.csv 名單
-                        <input type="file" id="file-upload" accept=".txt,.csv" class="hidden" onchange="handleFileInput(event)">
-                    </label>
-                    <p class="text-lg font-medium text-right text-white/75">
-                        目前人數: <span id="total-participants" class="text-yellow-300 font-bold text-2xl">0</span>
-                        / 最低要求: <span id="min-participants-required" class="font-bold text-2xl">34</span>
-                    </p>
-                </div>
-            </div>
-            <button id="next-step-btn" class="cta-btn w-full mt-6 text-xl" onclick="toRafflePage()" disabled>準備抽獎</button>
+      <div class="p-5 bg-white/5 rounded-xl">
+        <h3 class="font-bold text-xl text-white mb-4">本次活動總覽</h3>
+        <div class="flex justify-between items-center text-lg font-bold border-b border-white/20 pb-2 mb-2">
+          <span>抽獎順序與獎項</span>
+          <span>名額</span>
         </div>
-    </section>
+        <div id="prize-fixed-list" class="space-y-1 text-white/90"></div>
+        <p class="text-xl font-black text-white/90 pt-3 border-t border-white/20 mt-3">
+          本次總獎項名額：<span id="total-prizes-display" class="text-4xl text-yellow-300"></span> 名
+        </p>
+      </div>
 
-    <!-- 頁面 2: 抽獎 -->
-    <section id="page-raffle" class="transition-opacity duration-500 hidden">
-        <div class="raffle-main-grid">
-            <!-- 左側資訊 (獎項摘要) -->
-            <div class="glass-card p-6 h-fit raffle-sidebar">
-                <h3 class="text-xl font-bold text-white mb-4 border-b border-white/20 pb-2">獎項摘要</h3>
-                <ul id="raffle-prize-summary" class="space-y-3 font-semibold">
-                    <!-- 由 JS 動態生成 -->
-                </ul>
-                <div class="mt-6 pt-4 border-t border-white/20">
-                    <p class="text-lg font-bold text-white">總體進度:</p>
-                    <p class="text-3xl font-black text-yellow-300 mt-1">
-                        <span id="overall-drawn-count">0</span> / <span id="overall-target-count">0</span>
-                    </p>
-                    <button class="cta-btn mt-4 w-full" onclick="viewResultsSafely()">查看中獎名單</button>
-                </div>
-            </div>
+      <div>
+        <label for="names-input" class="block mb-3 font-semibold text-white/90">請貼上/輸入抽獎名單 (每行一位)：</label>
+        <textarea id="names-input" rows="10"
+          class="w-full bg-black/30 border border-white/20 p-4 rounded-lg text-white resize-none focus:ring-2 focus:ring-yellow-300 focus:border-yellow-300"></textarea>
 
-            <!-- 右側主舞台 -->
-            <div class="w-full">
-                <!-- 狀態卡 -->
-                <div class="w-full text-center glass-card p-5 mb-6">
-                    <p class="text-base text-white/75 font-semibold uppercase mb-1" id="prize-tier-text">目前獎項：</p>
-                    <h2 id="draw-prompt" class="text-2xl sm:text-3xl font-black text-white tracking-wide break-words"></h2>
-                    <p class="text-base font-bold mt-3 text-white/70">
-                        本獎項進度: <span id="current-draw-progress" class="text-yellow-300 font-black text-xl">0/0</span>
-                    </p>
-                    <p id="status-message" class="text-lg font-semibold mt-3 text-white/85"></p>
-                </div>
-
-                <!-- 抽籤箱舞台 -->
-                <div class="lottery-stage w-full">
-                    <div id="lottery-box">
-                        <div id="tickets-container"></div>
-                    </div>
-                    <div id="result-ticket-display" class="hidden">
-                        <div class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2" id="res-prize-name"></div>
-                        <div class="text-gray-900 text-3xl font-black" id="res-winner-name"></div>
-                        <div class="text-gray-400 text-xs mt-2" id="res-time"></div>
-                    </div>
-                </div>
-
-                <!-- 控制按鈕 -->
-                <div id="control-area" class="w-full text-center mt-8">
-                    <button id="control-btn" class="cta-btn text-xl p-5 w-72 h-auto" onclick="handleControlClick()">抽出一位</button>
-                </div>
-
-                <!-- 單項完成顯示 -->
-                <div id="prize-done-display" class="glass-card p-6 mt-8 hidden">
-                    <h3 id="prize-done-title" class="text-2xl font-black mb-4 text-white"></h3>
-                    <div class="overflow-x-auto mb-6 max-h-72">
-                        <table class="min-w-full text-base">
-                            <thead>
-                                <tr class="text-left font-semibold text-white/70 border-b border-white/20">
-                                    <th class="py-3 px-3">序號</th>
-                                    <th class="py-3 px-3">得獎者</th>
-                                    <th class="py-3 px-3">時間</th>
-                                </tr>
-                            </thead>
-                            <tbody id="prize-done-winners-body"></tbody>
-                        </table>
-                    </div>
-                    <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
-                        <button class="cta-btn" onclick="copySinglePrizeResults()">複製名單</button>
-                        <button class="cta-btn" onclick="downloadSinglePrizeCSV()">下載 CSV</button>
-                        <button class="cta-btn" onclick="handleNextPrize()">抽下一獎項</button>
-                    </div>
-                </div>
-            </div>
+        <div class="flex flex-col sm:flex-row justify-between items-center mt-4 gap-4">
+          <label class="cta-btn cursor-pointer text-base">
+            上傳 .txt/.csv 名單
+            <input type="file" id="file-upload" accept=".txt,.csv" class="hidden" onchange="handleFileInput(event)">
+          </label>
+          <p class="text-lg font-medium text-right text-white/75">
+            目前人數: <span id="total-participants" class="text-yellow-300 font-bold text-2xl">0</span>
+            / 最低要求: <span id="min-participants-required" class="font-bold text-2xl">34</span>
+          </p>
         </div>
-    </section>
+      </div>
 
-    <!-- 頁面 3: 結果 -->
-    <section id="page-results" class="transition-opacity duration-500 hidden">
-        <div class="glass-card p-8 space-y-6">
-            <h2 class="text-3xl font-black text-white border-b border-white/20 pb-2">完整中獎名單</h2>
-            <div class="flex justify-between text-white/75 font-semibold">
-                <p>開始: <span id="draw-time-started" class="text-yellow-300 font-mono"></span></p>
-                <p>結束: <span id="draw-time-ended" class="text-yellow-300 font-mono"></span></p>
-            </div>
-            <div class="overflow-x-auto shadow-xl rounded-lg">
-                <table class="min-w-full bg-white/5 text-base">
-                    <thead>
-                        <tr class="text-left bg-white/10">
-                            <th class="p-3">獎項</th>
-                            <th class="p-3">獎品</th>
-                            <th class="p-3">得獎者</th>
-                            <th class="p-3">時間</th>
-                        </tr>
-                    </thead>
-                    <tbody id="results-table-body"></tbody>
-                </table>
-            </div>
-            <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
-                <button class="cta-btn" onclick="copyAllResults()">複製全部</button>
-                <button class="cta-btn" onclick="downloadFullCSV()">下載 CSV</button>
-                <button class="cta-btn bg-blue-600 hover:bg-blue-700 text-white" onclick="backToRaffle()">返回抽獎</button>
-                <button class="cta-btn bg-red-600 hover:bg-red-700 text-white" onclick="resetApp()">重置系統</button>
-            </div>
-        </div>
-    </section>
-
-    <!-- Modal -->
-    <div id="custom-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
-        <div class="glass-card p-6 w-11/12 max-w-sm text-center">
-            <h4 id="modal-title" class="text-xl font-bold mb-3 text-yellow-300"></h4>
-            <p id="modal-text" class="mb-5 text-white/90"></p>
-            <div id="modal-actions" class="flex gap-3">
-                <button id="modal-close-btn" class="cta-btn w-full">關閉</button>
-            </div>
-        </div>
+      <button id="next-step-btn" class="cta-btn w-full mt-6 text-xl" onclick="toRafflePage()" disabled>準備抽獎</button>
     </div>
+  </section>
+
+  <!-- Page 2: Raffle -->
+  <section id="page-raffle" class="transition-opacity duration-500 hidden">
+    <div class="raffle-main-grid">
+      <!-- Sidebar -->
+      <div class="glass-card p-6 h-fit raffle-sidebar">
+        <h3 class="text-xl font-bold text-white mb-4 border-b border-white/20 pb-2">獎項摘要</h3>
+        <ul id="raffle-prize-summary" class="space-y-3 font-semibold"></ul>
+
+        <div class="mt-6 pt-4 border-t border-white/20">
+          <p class="text-lg font-bold text-white">總體進度:</p>
+          <p class="text-3xl font-black text-yellow-300 mt-1">
+            <span id="overall-drawn-count">0</span> / <span id="overall-target-count">0</span>
+          </p>
+          <button class="cta-btn mt-4 w-full" onclick="viewResultsSafely()">查看中獎名單</button>
+        </div>
+      </div>
+
+      <!-- Main Stage -->
+      <div class="w-full">
+        <div class="w-full text-center glass-card p-5 mb-6">
+          <p class="text-base text-white/75 font-semibold uppercase mb-1" id="prize-tier-text">目前獎項：</p>
+          <h2 id="draw-prompt" class="text-2xl sm:text-3xl font-black text-white tracking-wide break-words"></h2>
+          <p class="text-base font-bold mt-3 text-white/70">
+            本獎項進度: <span id="current-draw-progress" class="text-yellow-300 font-black text-xl">0/0</span>
+          </p>
+          <p id="status-message" class="text-lg font-semibold mt-3 text-white/85"></p>
+        </div>
+
+        <div class="lottery-stage w-full">
+          <div id="lottery-box">
+            <div id="tickets-container"></div>
+          </div>
+
+          <div id="result-ticket-display" class="hidden">
+            <div class="text-gray-500 text-sm font-bold uppercase tracking-wider mb-2" id="res-prize-name"></div>
+            <div class="text-gray-900 text-3xl font-black" id="res-winner-name"></div>
+            <div class="text-gray-400 text-xs mt-2" id="res-time"></div>
+          </div>
+        </div>
+
+        <div id="control-area" class="w-full text-center mt-8">
+          <button id="control-btn" class="cta-btn text-xl p-5 w-72 h-auto" onclick="handleControlClick()">抽出一位</button>
+        </div>
+
+        <div id="prize-done-display" class="glass-card p-6 mt-8 hidden">
+          <h3 id="prize-done-title" class="text-2xl font-black mb-4 text-white"></h3>
+          <div class="overflow-x-auto mb-6 max-h-72">
+            <table class="min-w-full text-base">
+              <thead>
+                <tr class="text-left font-semibold text-white/70 border-b border-white/20">
+                  <th class="py-3 px-3">序號</th>
+                  <th class="py-3 px-3">得獎者</th>
+                  <th class="py-3 px-3">時間</th>
+                </tr>
+              </thead>
+              <tbody id="prize-done-winners-body"></tbody>
+            </table>
+          </div>
+          <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
+            <button class="cta-btn" onclick="copySinglePrizeResults()">複製名單</button>
+            <button class="cta-btn" onclick="downloadSinglePrizeCSV()">下載 CSV</button>
+            <button class="cta-btn" onclick="handleNextPrize()">抽下一獎項</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Page 3: Results -->
+  <section id="page-results" class="transition-opacity duration-500 hidden">
+    <div class="glass-card p-8 space-y-6">
+      <h2 class="text-3xl font-black text-white border-b border-white/20 pb-2">完整中獎名單</h2>
+      <div class="flex justify-between text-white/75 font-semibold">
+        <p>開始: <span id="draw-time-started" class="text-yellow-300 font-mono"></span></p>
+        <p>結束: <span id="draw-time-ended" class="text-yellow-300 font-mono"></span></p>
+      </div>
+
+      <div class="overflow-x-auto shadow-xl rounded-lg">
+        <table class="min-w-full bg-white/5 text-base">
+          <thead>
+            <tr class="text-left bg-white/10">
+              <th class="p-3">獎項</th>
+              <th class="p-3">獎品</th>
+              <th class="p-3">得獎者</th>
+              <th class="p-3">時間</th>
+            </tr>
+          </thead>
+          <tbody id="results-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="flex flex-wrap justify-center gap-4 pt-4 border-t border-white/20">
+        <button class="cta-btn" onclick="copyAllResults()">複製全部</button>
+        <button class="cta-btn" onclick="downloadFullCSV()">下載 CSV</button>
+        <button class="cta-btn bg-blue-600 hover:bg-blue-700 text-white" onclick="backToRaffle()">返回抽獎</button>
+        <button class="cta-btn bg-red-600 hover:bg-red-700 text-white" onclick="resetApp()">重置系統</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Modal -->
+  <div id="custom-modal" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center">
+    <div class="glass-card p-6 w-11/12 max-w-sm text-center">
+      <h4 id="modal-title" class="text-xl font-bold mb-3 text-yellow-300"></h4>
+      <p id="modal-text" class="mb-5 text-white/90"></p>
+      <div id="modal-actions" class="flex gap-3"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-    // --- 核心資料 ---
-    const STORAGE_KEY = 'raffleBoxStateV2';
-    const TOTAL_QUOTA = 34;
-    const PRIZE_TIERS = [
-        { id: 1, tier: '伍獎', name: 'Lubro GT TECH 安全帽', quota: 8 },
-        { id: 2, tier: '肆獎', name: 'Lubro GT TECH 碳纖維安全帽', quota: 5 },
-        { id: 3, tier: '參獎', name: 'MiVue™ M820WD 雙鏡頭機車行車記錄器', quota: 10 },
-        { id: 4, tier: '貳獎', name: 'Mio MiVue™ D910W 後視鏡型行車記錄器', quota: 10 },
-        { id: 5, tier: '頭獎', name: 'PGO spring 125', quota: 1 }
-    ];
-    const FIXED_WINNERS = {
-  '頭獎': ['Cheng｜2014 Nissan Sentra'],
-  '貳獎': ['標車小助手｜2015 Toyota wish'],
-  '參獎': ['許豪｜2017 Lexus NX'],
-  '肆獎': ['Kimi1012｜2022 BMW 3 Series Touring'],
-  '伍獎': ['標車小助手｜2018 Toyota RAV4']
-};
-    const DRAW_STATE = { IDLE: 'idle', DRAWING: 'drawing', PRIZE_DONE: 'prizeDone', ALL_DONE: 'allDone' };
-    const TICKET_COLORS = ['#ffffff', '#fef3c7', '#d1fae5', '#e0e7ff', '#fee2e2'];
-    const NUM_TICKETS = 60;
+  // --- 核心資料 ---
+  const STORAGE_KEY = 'raffleBoxStateV3'; // 👈 換 key 避免吃到舊的壞狀態
+  const TOTAL_QUOTA = 34;
 
-    let appState = {
-        page: 'settings',
-        originalNames: [],
-        availableNames: [],
-        drawState: DRAW_STATE.IDLE,
-        currentSession: null
-    };
+  const PRIZE_TIERS = [
+    { id: 1, tier: '伍獎', name: 'Lubro GT TECH 安全帽', quota: 8 },
+    { id: 2, tier: '肆獎', name: 'Lubro GT TECH 碳纖維安全帽', quota: 5 },
+    { id: 3, tier: '參獎', name: 'MiVue™ M820WD 雙鏡頭機車行車記錄器', quota: 10 },
+    { id: 4, tier: '貳獎', name: 'Mio MiVue™ D910W 後視鏡型行車記錄器', quota: 10 },
+    { id: 5, tier: '頭獎', name: 'PGO spring 125', quota: 1 }
+  ];
 
-    // DOM 快取
-    let prizeFixedList, namesInput, nextStepBtn, totalParticipantsSpan, statusMessage;
-    let lotteryBox, ticketsContainer, resultTicketDisplay, prizeDoneDisplay, controlArea, controlBtn;
-    const pages = {};
+  const FIXED_WINNERS = {
+    '頭獎': ['Cheng｜2014 Nissan Sentra'],
+    '貳獎': ['標車小助手｜2015 Toyota wish'],
+    '參獎': ['許豪｜2017 Lexus NX'],
+    '肆獎': ['Kimi1012｜2022 BMW 3 Series Touring'],
+    '伍獎': ['標車小助手｜2018 Toyota RAV4']
+  };
 
-    // --- 輔助函式 ---
+  const DRAW_STATE = { IDLE: 'idle', DRAWING: 'drawing', PRIZE_DONE: 'prizeDone', ALL_DONE: 'allDone' };
+  const TICKET_COLORS = ['#ffffff', '#fef3c7', '#d1fae5', '#e0e7ff', '#fee2e2'];
+  const NUM_TICKETS = 60;
+
+  let appState = {
+    page: 'settings',
+    originalNames: [],
+    availableNames: [],
+    reservedByTier: {},     // 👈 用來保護指定名單
+    drawState: DRAW_STATE.IDLE,
+    currentSession: null
+  };
+
+  // DOM
+  let namesInput, nextStepBtn, totalParticipantsSpan, statusMessage;
+  let ticketsContainer, resultTicketDisplay, prizeDoneDisplay, controlArea, controlBtn;
+  const pages = {};
+
+  // --- Utils ---
   function formatDateTime(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, '0');
@@ -385,406 +385,478 @@
     const min = String(date.getMinutes()).padStart(2, '0');
     const s = String(date.getSeconds()).padStart(2, '0');
     return `${y}-${m}-${d} ${h}:${min}:${s}`;
-}
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
-    function showModal(title, text, isConfirm = false, onConfirm = null) {
-        document.getElementById('modal-title').textContent = title;
-        document.getElementById('modal-text').textContent = text;
-        const modal = document.getElementById('custom-modal');
-        const actions = document.getElementById('modal-actions');
-        
-        if (isConfirm) {
-            actions.innerHTML = `
-                <button id="m-cancel" class="cta-btn flex-1 bg-gray-600 text-white shadow-none">取消</button>
-                <button id="m-ok" class="cta-btn flex-1 bg-red-600 text-white">確認</button>
-            `;
-            document.getElementById('m-cancel').onclick = () => modal.classList.add('hidden');
-            document.getElementById('m-ok').onclick = () => {
-                modal.classList.add('hidden');
-                if (onConfirm) onConfirm();
-            };
-        } else {
-            actions.innerHTML = `<button id="m-close" class="cta-btn w-full">關閉</button>`;
-            document.getElementById('m-close').onclick = () => modal.classList.add('hidden');
-        }
-        modal.classList.remove('hidden');
-    }
-
-    function downloadFile(filename, content) {
-        const element = document.createElement('a');
-        element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(content));
-        element.setAttribute('download', filename);
-        element.style.display = 'none';
-        document.body.appendChild(element);
-        element.click();
-        document.body.removeChild(element);
-    }
-
-   function handleFileInput(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    const content = String(e.target.result || '');
-
-    const lines = content.split(/\r?\n/);
-
-    const formattedNames = lines
-      .map(line => line.trim())
-      .filter(Boolean)
-      .map(line => line.replace(/,/g, '｜'));
-
-    namesInput.value = formattedNames.join('\n');
-    updateNameList();
-
-    // 允許同一檔案重複上傳
-    event.target.value = '';
-  };
-
-  reader.readAsText(file, 'UTF-8');
-}
-
-    // --- UI 初始化 ---
-    function initializePrizeListHTML() {
-        document.getElementById('total-prizes-display').textContent = TOTAL_QUOTA;
-        document.getElementById('min-participants-required').textContent = TOTAL_QUOTA;
-        document.getElementById('prize-fixed-list').innerHTML = PRIZE_TIERS.map(p => `
-            <div class="flex justify-between items-center text-lg">
-                <span class="font-medium">${p.tier} (${p.name} ×${p.quota})</span>
-                <span class="font-mono text-white">${p.quota} 名</span>
-            </div>
-        `).join('');
-    }
-
-    function initTickets() {
-        ticketsContainer.innerHTML = '';
-        for(let i=0; i<NUM_TICKETS; i++) {
-            const t = document.createElement('div');
-            t.className = 'ticket';
-            t.style.backgroundColor = TICKET_COLORS[Math.floor(Math.random() * TICKET_COLORS.length)];
-            const x = Math.random() * 260;
-            const y = Math.random() * 200 + 100;
-            const r = Math.random() * 360;
-            t.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg)`;
-            for(let k=2; k<=4; k++) {
-                t.style.setProperty(`--tx${k}`, `${Math.random() * 260}px`);
-                t.style.setProperty(`--ty${k}`, `${Math.random() * 260}px`);
-                t.style.setProperty(`--tz${k}`, `${Math.random() * 100 - 50}px`);
-                t.style.setProperty(`--r${k}`, `${Math.random() * 720}deg`);
-            }
-            t.style.setProperty('--tx', `${x}px`);
-            t.style.setProperty('--ty', `${y}px`);
-            t.style.setProperty('--r', `${r}deg`);
-            ticketsContainer.appendChild(t);
-        }
-    }
-
-    function startShuffle() {
-        Array.from(ticketsContainer.children).forEach(t => {
-            t.style.animationDuration = (0.8 + Math.random()) + 's';
-            t.classList.add('shuffling');
-        });
-    }
-
-    function stopShuffle() {
-        Array.from(ticketsContainer.children).forEach(t => t.classList.remove('shuffling'));
-    }
-
-    // --- 核心邏輯 ---
-    function navigate(page) {
-        Object.keys(pages).forEach(k => pages[k].classList.add('hidden', 'opacity-0'));
-        pages[page].classList.remove('hidden');
-        setTimeout(() => pages[page].classList.remove('opacity-0'), 10);
-        appState.page = page;
-        if (page === 'raffle') updateRaffleUI();
-        if (page === 'results') updateResultsPage();
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-    }
-
-    function updateNameList() {
-        const val = namesInput.value.trim();
-        appState.originalNames = val ? [...new Set(val.split('\n').map(n => n.trim()).filter(n => n))] : [];
-        totalParticipantsSpan.textContent = appState.originalNames.length;
-        nextStepBtn.disabled = appState.originalNames.length < TOTAL_QUOTA;
-        document.getElementById('min-participants-required').className = nextStepBtn.disabled ? 'text-red-500 font-bold text-2xl' : 'text-green-400 font-bold text-2xl';
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-    }
-
-    function toRafflePage() {
-        if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
-// 建立抽獎池（先保護頭獎指定名單）
-const protectedNames = FIXED_WINNERS['頭獎'] || [];
-
-appState.availableNames = shuffleArray(
-  appState.originalNames.filter(name => !protectedNames.includes(name))
-);            
-            appState.currentSession = {
-                drawStartedAt: formatDateTime(new Date()),
-                prizeDrawingIndex: 0,
-                winners: []
-            };
-        }
-        initTickets();
-        navigate('raffle');
-    }
-
-    function getDrawStatus() {
-        if (!appState.currentSession) return { isOverallComplete: true };
-        let idx = appState.currentSession.prizeDrawingIndex;
-        while (idx < PRIZE_TIERS.length) {
-            const p = PRIZE_TIERS[idx];
-            const drawn = appState.currentSession.winners.filter(w => w.prizeTier === p.tier).length;
-            if (drawn < p.quota) break;
-            idx++;
-        }
-        appState.currentSession.prizeDrawingIndex = idx;
-        const totalDrawn = appState.currentSession.winners.length;
-        if (idx >= PRIZE_TIERS.length) return { isOverallComplete: true, totalDrawn };
-
-        const currentPrize = PRIZE_TIERS[idx];
-        const currentPrizeDrawn = appState.currentSession.winners.filter(w => w.prizeTier === currentPrize.tier).length;
-        return { isOverallComplete: false, currentPrize, currentPrizeDrawn, totalDrawn, currentTierIndex: idx };
-    }
-
-    function updateRaffleUI() {
-        const status = getDrawStatus();
-        document.getElementById('overall-drawn-count').textContent = status.totalDrawn || 0;
-        document.getElementById('overall-target-count').textContent = TOTAL_QUOTA;
-
-        // 左側：獎項摘要 (依據截圖調整)
-        const summary = document.getElementById('raffle-prize-summary');
-        summary.innerHTML = PRIZE_TIERS.map((p, i) => {
-            const drawn = appState.currentSession.winners.filter(w => w.prizeTier === p.tier).length;
-            const isCurrent = !status.isOverallComplete && i === status.currentTierIndex;
-            const isDone = drawn === p.quota;
-            
-            let liCls = "flex flex-col p-3 rounded-xl border transition-all ";
-            if (isCurrent) liCls += "bg-white/20 border-yellow-300/50 shadow-lg scale-105";
-            else if (isDone) liCls += "bg-white/5 border-green-500/30 opacity-60";
-            else liCls += "bg-white/5 border-white/10 opacity-80";
-
-            return `
-                <li class="${liCls}">
-                    <div class="flex justify-between items-start mb-1">
-                        <span class="text-sm font-bold ${isCurrent ? 'text-yellow-300' : 'text-white/60'}">${p.tier}</span>
-                        <span class="text-xs font-mono ${isDone ? 'text-green-400' : 'text-white/50'}">${drawn}/${p.quota}</span>
-                    </div>
-                    <div class="text-base font-black break-words whitespace-normal ${isCurrent ? 'text-white' : 'text-white/80'}">${p.name}</div>
-                    ${isCurrent ? '<div class="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-yellow-300 transition-all" style="width:'+(drawn/p.quota*100)+'%"></div></div>' : ''}
-                </li>
-            `;
-        }).join('');
-
-        controlArea.classList.remove('hidden');
-        prizeDoneDisplay.classList.add('hidden');
-        resultTicketDisplay.classList.add('hidden');
-        resultTicketDisplay.classList.remove('ticket-revealing');
-
-        if (status.isOverallComplete) {
-            appState.drawState = DRAW_STATE.ALL_DONE;
-            controlBtn.disabled = true;
-            controlBtn.textContent = '🎉 抽獎完畢';
-            statusMessage.textContent = '所有獎項已全數抽出。';
-            if(!appState.currentSession.drawEndedAt) appState.currentSession.drawEndedAt = formatDateTime(new Date());
-        } else if (status.currentPrizeDrawn >= status.currentPrize.quota) {
-            appState.drawState = DRAW_STATE.PRIZE_DONE;
-            controlArea.classList.add('hidden');
-            prizeDoneDisplay.classList.remove('hidden');
-            document.getElementById('prize-done-title').textContent = `${status.currentPrize.tier} 抽取完成`;
-            document.getElementById('prize-done-winners-body').innerHTML = appState.currentSession.winners
-                .filter(w => w.prizeTier === status.currentPrize.tier)
-                .map((w, i) => `<tr class="border-b border-white/10"><td class="p-2">${i+1}</td><td class="p-2 text-yellow-300 font-bold">${w.winnerName}</td><td class="p-2 text-xs font-mono">${w.drawnAt.split(' ')[1]}</td></tr>`).join('');
-            document.getElementById('draw-prompt').textContent = `${status.currentPrize.tier} (${status.currentPrize.name})`;
-            document.getElementById('current-draw-progress').textContent = `${status.currentPrize.quota}/${status.currentPrize.quota}`;
-        } else {
-            appState.drawState = DRAW_STATE.IDLE;
-            controlBtn.disabled = false;
-            controlBtn.textContent = `抽出一位 (${status.currentPrize.tier})`;
-            document.getElementById('draw-prompt').textContent = `${status.currentPrize.tier} (${status.currentPrize.name})`;
-            document.getElementById('current-draw-progress').textContent = `${status.currentPrizeDrawn}/${status.currentPrize.quota}`;
-            statusMessage.textContent = '準備就緒，請點擊抽獎。';
-        }
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
-    }
-
-   async function handleControlClick() {
-  if (appState.drawState !== DRAW_STATE.IDLE) return;
-
-  const status = getDrawStatus();
-  const prize = status.currentPrize;
-  if (!prize) return;
-
-  if (appState.availableNames.length === 0) {
-    return showModal('錯誤', '名單已用完');
   }
 
-  appState.drawState = DRAW_STATE.DRAWING;
-  controlBtn.disabled = true;
-  resultTicketDisplay.classList.add('hidden', 'opacity-0');
-  resultTicketDisplay.classList.remove('ticket-revealing');
-
-  // 攪拌一次
-  startShuffle();
-  statusMessage.textContent = `正在攪拌抽籤箱，準備抽出 ${prize.tier}（共 ${prize.quota} 名）...`;
-  await new Promise(r => setTimeout(r, 2000));
-  stopShuffle();
-
-  // 這個獎項已抽出幾個
-  const alreadyDrawn = appState.currentSession.winners
-    .filter(w => w.prizeTier === prize.tier)
-    .length;
-
-  const remaining = prize.quota - alreadyDrawn;
-
-       // 🧩 若為頭獎，將指定名單放回抽獎池（只放一次）
-if (prize.tier === '頭獎' && FIXED_WINNERS['頭獎']?.length) {
-  FIXED_WINNERS['頭獎'].forEach(name => {
-    if (!appState.availableNames.includes(name)) {
-      appState.availableNames.push(name);
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
     }
-  });
-}
+    return array;
+  }
 
-  for (let i = 0; i < remaining; i++) {
-    if (appState.availableNames.length === 0) break;
+  function showModal(title, text, isConfirm = false, onConfirm = null) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-text').textContent = text;
+    const modal = document.getElementById('custom-modal');
+    const actions = document.getElementById('modal-actions');
 
-    let name = null;
+    if (isConfirm) {
+      actions.innerHTML = `
+        <button id="m-cancel" class="cta-btn flex-1 bg-gray-600 text-white shadow-none">取消</button>
+        <button id="m-ok" class="cta-btn flex-1 bg-red-600 text-white">確認</button>
+      `;
+      document.getElementById('m-cancel').onclick = () => modal.classList.add('hidden');
+      document.getElementById('m-ok').onclick = () => {
+        modal.classList.add('hidden');
+        if (onConfirm) onConfirm();
+      };
+    } else {
+      actions.innerHTML = `<button id="m-close" class="cta-btn w-full">關閉</button>`;
+      document.getElementById('m-close').onclick = () => modal.classList.add('hidden');
+    }
+    modal.classList.remove('hidden');
+  }
 
-    // 🔒 指定名單只用在「第一個」
-    if (i === 0 && FIXED_WINNERS?.[prize.tier]?.length) {
-      const fixedName = FIXED_WINNERS[prize.tier][0];
-      const idx = appState.availableNames.indexOf(fixedName);
-      if (idx !== -1) {
-        name = appState.availableNames.splice(idx, 1)[0];
+  function downloadFile(filename, content) {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/csv;charset=utf-8,' + encodeURIComponent(content));
+    element.setAttribute('download', filename);
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  }
+
+  function handleFileInput(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const content = String(e.target.result || '');
+      const lines = content.split(/\r?\n/);
+
+      const formattedNames = lines
+        .map(line => line.trim())
+        .filter(Boolean)
+        .map(line => line.replace(/,/g, '｜'));
+
+      namesInput.value = formattedNames.join('\n');
+      updateNameList();
+      event.target.value = '';
+    };
+
+    reader.readAsText(file, 'UTF-8');
+  }
+
+  // --- UI init ---
+  function initializePrizeListHTML() {
+    document.getElementById('total-prizes-display').textContent = TOTAL_QUOTA;
+    document.getElementById('min-participants-required').textContent = TOTAL_QUOTA;
+    document.getElementById('prize-fixed-list').innerHTML = PRIZE_TIERS.map(p => `
+      <div class="flex justify-between items-center text-lg">
+        <span class="font-medium">${p.tier} (${p.name} ×${p.quota})</span>
+        <span class="font-mono text-white">${p.quota} 名</span>
+      </div>
+    `).join('');
+  }
+
+  function initTickets() {
+    ticketsContainer.innerHTML = '';
+    for (let i = 0; i < NUM_TICKETS; i++) {
+      const t = document.createElement('div');
+      t.className = 'ticket';
+      t.style.backgroundColor = TICKET_COLORS[Math.floor(Math.random() * TICKET_COLORS.length)];
+      const x = Math.random() * 260;
+      const y = Math.random() * 200 + 100;
+      const r = Math.random() * 360;
+      t.style.transform = `translate(${x}px, ${y}px) rotate(${r}deg)`;
+
+      for (let k = 2; k <= 4; k++) {
+        t.style.setProperty(`--tx${k}`, `${Math.random() * 260}px`);
+        t.style.setProperty(`--ty${k}`, `${Math.random() * 260}px`);
+        t.style.setProperty(`--tz${k}`, `${Math.random() * 100 - 50}px`);
+        t.style.setProperty(`--r${k}`, `${Math.random() * 720}deg`);
       }
+      t.style.setProperty('--tx', `${x}px`);
+      t.style.setProperty('--ty', `${y}px`);
+      t.style.setProperty('--tz', `${Math.random() * 100 - 50}px`);
+      t.style.setProperty('--r', `${r}deg`);
+      ticketsContainer.appendChild(t);
     }
+  }
 
-    // 沒指定到就隨機
-    if (!name) {
-      const idx = Math.floor(Math.random() * appState.availableNames.length);
-      name = appState.availableNames.splice(idx, 1)[0];
-    }
+  function startShuffle() {
+    Array.from(ticketsContainer.children).forEach(t => {
+      t.style.animationDuration = (0.8 + Math.random()) + 's';
+      t.classList.add('shuffling');
+    });
+  }
 
-    const now = formatDateTime(new Date());
+  function stopShuffle() {
+    Array.from(ticketsContainer.children).forEach(t => t.classList.remove('shuffling'));
+  }
 
-    appState.currentSession.winners.push({
-      prizeTier: prize.tier,
-      prizeName: prize.name,
-      winnerName: name,
-      drawnAt: now
+  // --- Navigation ---
+  function navigate(page) {
+    Object.keys(pages).forEach(k => pages[k].classList.add('hidden', 'opacity-0'));
+    pages[page].classList.remove('hidden');
+    setTimeout(() => pages[page].classList.remove('opacity-0'), 10);
+
+    appState.page = page;
+    if (page === 'raffle') updateRaffleUI();
+    if (page === 'results') updateResultsPage();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  }
+
+  function updateNameList() {
+    const val = namesInput.value.trim();
+    appState.originalNames = val ? [...new Set(val.split('\n').map(n => n.trim()).filter(Boolean))] : [];
+
+    totalParticipantsSpan.textContent = appState.originalNames.length;
+    nextStepBtn.disabled = appState.originalNames.length < TOTAL_QUOTA;
+
+    document.getElementById('min-participants-required').className =
+      nextStepBtn.disabled ? 'text-red-500 font-bold text-2xl' : 'text-green-400 font-bold text-2xl';
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  }
+
+  // --- 指定名單保護機制：把「指定的那位」先從池子移除，等到該獎項要抽的時候再塞回來 ---
+  function buildReservedAndPool() {
+    // 只取每個獎項的「第一個指定人」作為保護（你目前就是這樣用）
+    const reservedByTier = {};
+    Object.keys(FIXED_WINNERS).forEach(tier => {
+      const fixed = (FIXED_WINNERS[tier] || []).filter(Boolean);
+      if (fixed.length > 0) reservedByTier[tier] = fixed[0];
     });
 
-    // 顯示畫面（顯示最後一位即可）
-    document.getElementById('res-prize-name').textContent = prize.tier;
+    const reservedNames = new Set(Object.values(reservedByTier));
+    const pool = appState.originalNames.filter(n => !reservedNames.has(n));
 
-    const [nick, car] = String(name)
-      .split('｜')
-      .map(s => s?.trim())
-      .filter(Boolean);
-
-    document.getElementById('res-winner-name').innerHTML = `
-      <div style="font-weight:900; font-size:34px; line-height:1.05;">
-        ${nick || ''}
-      </div>
-      ${car ? `
-        <div style="margin-top:6px; font-weight:800; font-size:20px; line-height:1.2;">
-          ${car}
-        </div>` : ''}
-    `;
-
-    document.getElementById('res-time').textContent = now.split(' ')[1];
-
-    resultTicketDisplay.classList.remove('hidden');
-    resultTicketDisplay.classList.add('ticket-revealing');
-
-    statusMessage.innerHTML = `
-      ${prize.tier} 抽取中：
-      <span class="text-yellow-300 font-black">
-        ${alreadyDrawn + i + 1} / ${prize.quota}
-      </span>
-    `;
-
-    await new Promise(r => setTimeout(r, 700));
-    resultTicketDisplay.classList.remove('ticket-revealing');
+    appState.reservedByTier = reservedByTier;
+    appState.availableNames = shuffleArray([...pool]);
   }
 
-  statusMessage.textContent = `${prize.tier} 已一次抽完`;
+  function ensureReservedInjectedForTier(tier) {
+    const reservedName = appState.reservedByTier?.[tier];
+    if (!reservedName) return;
 
-  appState.drawState = DRAW_STATE.IDLE;
-  updateRaffleUI();
-}
+    // 如果已經抽到過，就不要再塞回來
+    const alreadyWon = appState.currentSession?.winners?.some(w => w.winnerName === reservedName);
+    if (alreadyWon) return;
 
-    function handleNextPrize() {
-        appState.drawState = DRAW_STATE.IDLE;
-        updateRaffleUI();
+    // 如果不在池子內，塞回去（這一步就是修 34 人爆掉的關鍵）
+    if (!appState.availableNames.includes(reservedName)) {
+      appState.availableNames.push(reservedName);
     }
+  }
 
-    function updateResultsPage() {
-        document.getElementById('draw-time-started').textContent = appState.currentSession.drawStartedAt;
-        document.getElementById('draw-time-ended').textContent = appState.currentSession.drawEndedAt || '進行中';
-        document.getElementById('results-table-body').innerHTML = appState.currentSession.winners.map(w => `
-            <tr class="border-b border-white/10 hover:bg-white/5">
-                <td class="p-3">${w.prizeTier}</td>
-                <td class="p-3">${w.prizeName}</td>
-                <td class="p-3 text-yellow-300 font-bold">${w.winnerName}</td>
-                <td class="p-3 text-xs font-mono">${w.drawnAt}</td>
-            </tr>
-        `).join('');
+  function toRafflePage() {
+    if (!appState.currentSession || appState.currentSession.winners.length === TOTAL_QUOTA) {
+      buildReservedAndPool();
+      appState.currentSession = {
+        drawStartedAt: formatDateTime(new Date()),
+        prizeDrawingIndex: 0,
+        winners: []
+      };
     }
+    initTickets();
+    navigate('raffle');
+  }
 
-    // 操作
-    function copyAllResults() {
-        const txt = appState.currentSession.winners.map(w => `【${w.prizeTier}】${w.winnerName}`).join('\n');
-        navigator.clipboard.writeText(txt).then(() => showModal('完成', '名單已複製'));
-    }
-    function downloadFullCSV() {
-        const csv = "\uFEFF獎項,獎品,得獎者,時間\n" + appState.currentSession.winners.map(w => `"${w.prizeTier}","${w.prizeName}","${w.winnerName}","${w.drawnAt}"`).join("\n");
-        downloadFile('完整得獎名單.csv', csv);
-    }
-    function viewResultsSafely() {
-        if(appState.drawState === DRAW_STATE.DRAWING) return;
-        navigate('results');
-    }
-    function backToRaffle() { navigate('raffle'); }
-    function resetApp() {
-        showModal('警告', '確定要清空所有資料重置嗎？', true, () => {
-            localStorage.removeItem(STORAGE_KEY);
-            window.location.reload();
-        });
+  function getDrawStatus() {
+    if (!appState.currentSession) return { isOverallComplete: true, totalDrawn: 0 };
+
+    let idx = appState.currentSession.prizeDrawingIndex;
+
+    while (idx < PRIZE_TIERS.length) {
+      const p = PRIZE_TIERS[idx];
+      const drawn = appState.currentSession.winners.filter(w => w.prizeTier === p.tier).length;
+      if (drawn < p.quota) break;
+      idx++;
     }
 
-    function init() {
-        pages.settings = document.getElementById('page-settings');
-        pages.raffle = document.getElementById('page-raffle');
-        pages.results = document.getElementById('page-results');
-        namesInput = document.getElementById('names-input');
-        nextStepBtn = document.getElementById('next-step-btn');
-        totalParticipantsSpan = document.getElementById('total-participants');
-        ticketsContainer = document.getElementById('tickets-container');
-        resultTicketDisplay = document.getElementById('result-ticket-display');
-        prizeDoneDisplay = document.getElementById('prize-done-display');
-        controlArea = document.getElementById('control-area');
-        controlBtn = document.getElementById('control-btn');
-        statusMessage = document.getElementById('status-message');
+    appState.currentSession.prizeDrawingIndex = idx;
 
-        initializePrizeListHTML();
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) appState = JSON.parse(stored);
-        if (appState.originalNames.length) namesInput.value = appState.originalNames.join('\n');
-        
-        updateNameList();
-        navigate(appState.page);
-        if (appState.page === 'raffle') initTickets();
-        namesInput.oninput = updateNameList;
+    const totalDrawn = appState.currentSession.winners.length;
+    if (idx >= PRIZE_TIERS.length) return { isOverallComplete: true, totalDrawn };
+
+    const currentPrize = PRIZE_TIERS[idx];
+    const currentPrizeDrawn = appState.currentSession.winners.filter(w => w.prizeTier === currentPrize.tier).length;
+
+    return { isOverallComplete: false, currentPrize, currentPrizeDrawn, totalDrawn, currentTierIndex: idx };
+  }
+
+  function updateRaffleUI() {
+    const status = getDrawStatus();
+
+    document.getElementById('overall-drawn-count').textContent = status.totalDrawn || 0;
+    document.getElementById('overall-target-count').textContent = TOTAL_QUOTA;
+
+    // Left summary
+    const summary = document.getElementById('raffle-prize-summary');
+    summary.innerHTML = PRIZE_TIERS.map((p, i) => {
+      const drawn = appState.currentSession.winners.filter(w => w.prizeTier === p.tier).length;
+      const isCurrent = !status.isOverallComplete && i === status.currentTierIndex;
+      const isDone = drawn === p.quota;
+
+      let liCls = "flex flex-col p-3 rounded-xl border transition-all ";
+      if (isCurrent) liCls += "bg-white/20 border-yellow-300/50 shadow-lg scale-105";
+      else if (isDone) liCls += "bg-white/5 border-green-500/30 opacity-60";
+      else liCls += "bg-white/5 border-white/10 opacity-80";
+
+      return `
+        <li class="${liCls}">
+          <div class="flex justify-between items-start mb-1">
+            <span class="text-sm font-bold ${isCurrent ? 'text-yellow-300' : 'text-white/60'}">${p.tier}</span>
+            <span class="text-xs font-mono ${isDone ? 'text-green-400' : 'text-white/50'}">${drawn}/${p.quota}</span>
+          </div>
+          <div class="text-base font-black break-words whitespace-normal ${isCurrent ? 'text-white' : 'text-white/80'}">${p.name}</div>
+          ${isCurrent ? '<div class="mt-2 h-1 w-full bg-white/10 rounded-full overflow-hidden"><div class="h-full bg-yellow-300 transition-all" style="width:'+(drawn/p.quota*100)+'%"></div></div>' : ''}
+        </li>
+      `;
+    }).join('');
+
+    controlArea.classList.remove('hidden');
+    prizeDoneDisplay.classList.add('hidden');
+    resultTicketDisplay.classList.add('hidden');
+    resultTicketDisplay.classList.remove('ticket-revealing');
+
+    if (status.isOverallComplete) {
+      appState.drawState = DRAW_STATE.ALL_DONE;
+      controlBtn.disabled = true;
+      controlBtn.textContent = '🎉 抽獎完畢';
+      statusMessage.textContent = '所有獎項已全數抽出。';
+      if (!appState.currentSession.drawEndedAt) appState.currentSession.drawEndedAt = formatDateTime(new Date());
+    } else if (status.currentPrizeDrawn >= status.currentPrize.quota) {
+      appState.drawState = DRAW_STATE.PRIZE_DONE;
+      controlArea.classList.add('hidden');
+      prizeDoneDisplay.classList.remove('hidden');
+
+      document.getElementById('prize-done-title').textContent = `${status.currentPrize.tier} 抽取完成`;
+      document.getElementById('prize-done-winners-body').innerHTML =
+        appState.currentSession.winners
+          .filter(w => w.prizeTier === status.currentPrize.tier)
+          .map((w, i) =>
+            `<tr class="border-b border-white/10">
+              <td class="p-2">${i+1}</td>
+              <td class="p-2 text-yellow-300 font-bold">${w.winnerName}</td>
+              <td class="p-2 text-xs font-mono">${w.drawnAt.split(' ')[1]}</td>
+            </tr>`
+          ).join('');
+
+      document.getElementById('draw-prompt').textContent = `${status.currentPrize.tier} (${status.currentPrize.name})`;
+      document.getElementById('current-draw-progress').textContent = `${status.currentPrize.quota}/${status.currentPrize.quota}`;
+    } else {
+      appState.drawState = DRAW_STATE.IDLE;
+      controlBtn.disabled = false;
+      controlBtn.textContent = `抽出一位 (${status.currentPrize.tier})`;
+      document.getElementById('draw-prompt').textContent = `${status.currentPrize.tier} (${status.currentPrize.name})`;
+      document.getElementById('current-draw-progress').textContent = `${status.currentPrizeDrawn}/${status.currentPrize.quota}`;
+      statusMessage.textContent = '準備就緒，請點擊抽獎。';
     }
-    window.onload = init;
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+  }
+
+  function pickOneNameForTier(tier) {
+    // 先確保「該獎項指定名單」在池中（這就是修 34 人爆掉的點）
+    ensureReservedInjectedForTier(tier);
+
+    if (appState.availableNames.length === 0) return null;
+
+    // 指定名單：只要還沒抽出過，且存在池內，就優先抽
+    const reserved = appState.reservedByTier?.[tier];
+    if (reserved) {
+      const idx = appState.availableNames.indexOf(reserved);
+      if (idx !== -1) return appState.availableNames.splice(idx, 1)[0];
+    }
+
+    // 否則隨機
+    const idx = Math.floor(Math.random() * appState.availableNames.length);
+    return appState.availableNames.splice(idx, 1)[0];
+  }
+
+  async function handleControlClick() {
+    if (appState.drawState !== DRAW_STATE.IDLE) return;
+
+    const status = getDrawStatus();
+    const prize = status.currentPrize;
+    if (!prize) return;
+
+    appState.drawState = DRAW_STATE.DRAWING;
+    controlBtn.disabled = true;
+    resultTicketDisplay.classList.add('hidden', 'opacity-0');
+    resultTicketDisplay.classList.remove('ticket-revealing');
+
+    startShuffle();
+    statusMessage.textContent = `正在攪拌抽籤箱，準備抽出 ${prize.tier}（共 ${prize.quota} 名）...`;
+    await new Promise(r => setTimeout(r, 2000));
+    stopShuffle();
+
+    // 這個獎項剩餘要抽幾個
+    const alreadyDrawn = appState.currentSession.winners.filter(w => w.prizeTier === prize.tier).length;
+    const remaining = prize.quota - alreadyDrawn;
+
+    for (let i = 0; i < remaining; i++) {
+      const name = pickOneNameForTier(prize.tier);
+
+      // 真沒人了（這時才報錯）
+      if (!name) {
+        showModal('錯誤', '名單已用完（可用名單不足以抽完所有獎項）');
+        break;
+      }
+
+      const now = formatDateTime(new Date());
+
+      appState.currentSession.winners.push({
+        prizeTier: prize.tier,
+        prizeName: prize.name,
+        winnerName: name,
+        drawnAt: now
+      });
+
+      // 顯示畫面（每次顯示當次抽出）
+      document.getElementById('res-prize-name').textContent = prize.tier;
+
+      const [nick, car] = String(name).split('｜').map(s => (s || '').trim()).filter(Boolean);
+      document.getElementById('res-winner-name').innerHTML = `
+        <div style="font-weight:900; font-size:34px; line-height:1.05;">${nick || ''}</div>
+        ${car ? `<div style="margin-top:6px; font-weight:800; font-size:20px; line-height:1.2;">${car}</div>` : ''}
+      `;
+      document.getElementById('res-time').textContent = now.split(' ')[1];
+
+      resultTicketDisplay.classList.remove('hidden');
+      resultTicketDisplay.classList.add('ticket-revealing');
+
+      statusMessage.innerHTML = `
+        ${prize.tier} 抽取中：
+        <span class="text-yellow-300 font-black">${alreadyDrawn + i + 1} / ${prize.quota}</span>
+      `;
+
+      await new Promise(r => setTimeout(r, 700));
+      resultTicketDisplay.classList.remove('ticket-revealing');
+    }
+
+    appState.drawState = DRAW_STATE.IDLE;
+    updateRaffleUI();
+  }
+
+  function handleNextPrize() {
+    appState.drawState = DRAW_STATE.IDLE;
+    updateRaffleUI();
+  }
+
+  function updateResultsPage() {
+    document.getElementById('draw-time-started').textContent = appState.currentSession.drawStartedAt;
+    document.getElementById('draw-time-ended').textContent = appState.currentSession.drawEndedAt || '進行中';
+
+    document.getElementById('results-table-body').innerHTML =
+      appState.currentSession.winners.map(w => `
+        <tr class="border-b border-white/10 hover:bg-white/5">
+          <td class="p-3">${w.prizeTier}</td>
+          <td class="p-3">${w.prizeName}</td>
+          <td class="p-3 text-yellow-300 font-bold">${w.winnerName}</td>
+          <td class="p-3 text-xs font-mono">${w.drawnAt}</td>
+        </tr>
+      `).join('');
+  }
+
+  // --- 操作：全部 ---
+  function copyAllResults() {
+    const txt = appState.currentSession.winners.map(w => `【${w.prizeTier}】${w.winnerName}`).join('\n');
+    navigator.clipboard.writeText(txt).then(() => showModal('完成', '名單已複製'));
+  }
+
+  function downloadFullCSV() {
+    const csv = "\uFEFF獎項,獎品,得獎者,時間\n" +
+      appState.currentSession.winners.map(w => `"${w.prizeTier}","${w.prizeName}","${w.winnerName}","${w.drawnAt}"`).join("\n");
+    downloadFile('完整得獎名單.csv', csv);
+  }
+
+  function viewResultsSafely() {
+    if (appState.drawState === DRAW_STATE.DRAWING) return;
+    navigate('results');
+  }
+  function backToRaffle() { navigate('raffle'); }
+
+  function resetApp() {
+    showModal('警告', '確定要清空所有資料重置嗎？', true, () => {
+      localStorage.removeItem(STORAGE_KEY);
+      window.location.reload();
+    });
+  }
+
+  // ✅ 補齊：單一獎項複製/下載（你 UI 有按鈕，但原本缺 function 會直接噴錯）
+  function getCurrentTierFromUI() {
+    const status = getDrawStatus();
+    // 若目前顯示 prizeDone，那 currentPrize 可能已被 idx 推進，這裡用「最後完成的那一個」更穩
+    // 方式：找 winners 裡最後一筆的 tier
+    const last = appState.currentSession?.winners?.[appState.currentSession.winners.length - 1];
+    return last?.prizeTier || status?.currentPrize?.tier || null;
+  }
+
+  function copySinglePrizeResults() {
+    const tier = getCurrentTierFromUI();
+    if (!tier) return showModal('錯誤', '找不到目前獎項');
+
+    const list = appState.currentSession.winners
+      .filter(w => w.prizeTier === tier)
+      .map(w => w.winnerName);
+
+    const txt = list.map((name, i) => `${i + 1}. ${name}`).join('\n');
+    navigator.clipboard.writeText(txt).then(() => showModal('完成', `${tier} 名單已複製`));
+  }
+
+  function downloadSinglePrizeCSV() {
+    const tier = getCurrentTierFromUI();
+    if (!tier) return showModal('錯誤', '找不到目前獎項');
+
+    const rows = appState.currentSession.winners
+      .filter(w => w.prizeTier === tier)
+      .map(w => `"${w.prizeTier}","${w.prizeName}","${w.winnerName}","${w.drawnAt}"`)
+      .join("\n");
+
+    const csv = "\uFEFF獎項,獎品,得獎者,時間\n" + rows;
+    downloadFile(`${tier}_得獎名單.csv`, csv);
+  }
+
+  // --- init ---
+  function init() {
+    pages.settings = document.getElementById('page-settings');
+    pages.raffle = document.getElementById('page-raffle');
+    pages.results = document.getElementById('page-results');
+
+    namesInput = document.getElementById('names-input');
+    nextStepBtn = document.getElementById('next-step-btn');
+    totalParticipantsSpan = document.getElementById('total-participants');
+
+    ticketsContainer = document.getElementById('tickets-container');
+    resultTicketDisplay = document.getElementById('result-ticket-display');
+    prizeDoneDisplay = document.getElementById('prize-done-display');
+    controlArea = document.getElementById('control-area');
+    controlBtn = document.getElementById('control-btn');
+    statusMessage = document.getElementById('status-message');
+
+    initializePrizeListHTML();
+
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      try { appState = JSON.parse(stored); } catch (e) {}
+    }
+
+    if (appState.originalNames?.length) namesInput.value = appState.originalNames.join('\n');
+
+    updateNameList();
+    navigate(appState.page || 'settings');
+    if (appState.page === 'raffle') initTickets();
+
+    namesInput.oninput = updateNameList;
+  }
+
+  window.onload = init;
 </script>
 </body>
 </html>
